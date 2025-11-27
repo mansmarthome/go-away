@@ -8,6 +8,7 @@ import (
 	_ "git.gammaspectra.live/git/go-away/lib/challenge/refresh"
 	_ "git.gammaspectra.live/git/go-away/lib/challenge/resource-load"
 	_ "git.gammaspectra.live/git/go-away/lib/challenge/wasm"
+	_ "git.gammaspectra.live/git/go-away/lib/challenge/yandex-smartcaptcha"
 )
 
 // This file loads embedded challenge runtimes so their init() is called
