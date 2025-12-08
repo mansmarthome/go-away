@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"log/slog"
 )
 
 type RADb struct {
@@ -132,38 +133,60 @@ func (db *RADb) FetchASNets(asn int) (result []net.IPNet, err error) {
 		panic("invalid regex prefix")
 	}
 
-	var data []byte
+	var prefixes []net.IPNet
 
-	err = db.query(func(n int, record []byte) error {
+	// Query IPv4 separately
+	data4 := []byte{}
+	err4 := db.query(func(n int, record []byte) error {
 		if n == 0 {
-			// do not append ASN number reply
+			// skip ASN number reply
 			return nil
 		}
-		// pad data
-		if n == 1 {
-			data = append(data, ' ')
-		}
-		data = append(data, record...)
+		data4 = append(data4, record...)
 		return nil
-	},
-		// See https://www.radb.net/query/help
-		// fetch IPv4 routes
-		fmt.Sprintf("!gas%d", asn),
-		// fetch IPv6 routes
-		fmt.Sprintf("!6as%d", asn),
-	)
-	if err != nil {
-		return nil, err
-	}
+	}, fmt.Sprintf("!gas%d", asn))
 
-	matches := whoisRouteRegex.FindAllSubmatch(data, -1)
-	for _, match := range matches {
-		_, ipNet, err := net.ParseCIDR(string(match[ix]))
-		if err != nil {
-			return nil, fmt.Errorf("invalid CIDR %s: %w", string(match[ix]), err)
+	if err4 == nil {
+		matches := whoisRouteRegex.FindAllSubmatch(data4, -1)
+		for _, match := range matches {
+			_, ipNet, parseErr := net.ParseCIDR(string(match[ix]))
+			if parseErr != nil {
+				return nil, fmt.Errorf("invalid IPv4 CIDR %s: %w", string(match[ix]), parseErr)
+			}
+			prefixes = append(prefixes, *ipNet)
 		}
-		result = append(result, *ipNet)
 	}
 
-	return result, nil
+	// Query IPv6 separately
+	data6 := []byte{}
+	err6 := db.query(func(n int, record []byte) error {
+		if n == 0 {
+			// skip ASN number reply
+			return nil
+		}
+		data6 = append(data6, record...)
+		return nil
+	}, fmt.Sprintf("!6as%d", asn))
+
+	if err6 == nil {
+		matches := whoisRouteRegex.FindAllSubmatch(data6, -1)
+		for _, match := range matches {
+			_, ipNet, parseErr := net.ParseCIDR(string(match[ix]))
+			if parseErr != nil {
+				return nil, fmt.Errorf("invalid IPv6 CIDR %s: %w", string(match[ix]), parseErr)
+			}
+			prefixes = append(prefixes, *ipNet)
+		}
+	}
+
+	// Decide on error
+	if err4 != nil && err6 != nil {
+		return nil, fmt.Errorf("both IPv4 and IPv6 queries failed for ASN %d: %v, %v", asn, err4, err6)
+	} else if err4 != nil {
+		slog.Warn("IPv4 query failed for ASN, falling back to IPv6 only", "asn", asn, "err", err4, "prefixes", len(prefixes))
+	} else if err6 != nil {
+		slog.Warn("IPv6 query failed for ASN, falling back to IPv4 only", "asn", asn, "err", err6, "prefixes", len(prefixes))
+	}
+
+	return prefixes, nil
 }
