@@ -260,7 +260,7 @@ func main() {
 			PrivateKeySeed:        seed,
 			ClientIpHeader:        *clientIpHeader,
 			BackendIpHeader:       *backendIpHeader,
-			ChallengeResponseCode: http.StatusTeapot,
+			ChallengeResponseCode: http.StatusForbidden,
 		}
 
 		state, err := lib.NewState(*p, opt, stateSettings)
