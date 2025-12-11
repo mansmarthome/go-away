@@ -2,7 +2,6 @@ package lib
 
 import (
 	"codeberg.org/meta/gzipped/v2"
-	"fmt"
 	"git.gammaspectra.live/git/go-away/embed"
 	"git.gammaspectra.live/git/go-away/lib/action"
 	"git.gammaspectra.live/git/go-away/lib/challenge"
@@ -38,7 +37,7 @@ func GetLoggerForRequest(r *http.Request) *slog.Logger {
 	return slog.With(args...)
 }
 
-func (state *State) fetchTags(host string, backend http.Handler, r *http.Request, meta, link bool) []html.Node {
+func (state *State) fetchTags(host string, backend http.Handler, r *http.Request, meta, link bool) (result []html.Node) {
 	uri := *r.URL
 	q := uri.Query()
 	for k := range q {
@@ -48,171 +47,48 @@ func (state *State) fetchTags(host string, backend http.Handler, r *http.Request
 	}
 	uri.RawQuery = q.Encode()
 
-	key := fmt.Sprintf("%s:%s", host, uri.String())
+	key := host + uri.String()
 
-	if v, ok := state.tagCache.Get(key); ok {
-		return v
+	if cached, ok := state.tagCache.Get(key); ok {
+		return cached
 	}
 
-	result := utils.FetchTags(backend, &uri, func() (r []string) {
-		if meta {
-			r = append(r, "meta")
-		} else if link {
-			r = append(r, "link")
-		}
-		return r
-	}()...)
-	if result == nil {
-		return nil
-	}
+	metaTags, linkTags := utils.FetchTags(backend, r, meta, link)
 
-	entries := make([]html.Node, 0, len(result))
-	for _, n := range result {
-		if n.Namespace != "" {
-			continue
+	// Combine and filter to safe tags only
+	var safe []html.Node
+	for _, node := range append(metaTags, linkTags...) {
+		attrs := make(map[string]string, len(node.Attr))
+		for _, a := range node.Attr {
+			attrs[a.Key] = a.Val
 		}
 
-		switch n.Data {
-		case "link":
-			safeAttributes := []string{"rel", "href", "hreflang", "media", "title", "type"}
-
-			var name string
-			for _, attr := range n.Attr {
-				if attr.Namespace != "" {
-					continue
-				}
-				if attr.Key == "rel" {
-					name = attr.Val
-					break
-				}
-			}
-
-			if name == "" {
-				continue
-			}
-
-			var keep bool
-			if name == "icon" || name == "alternate icon" {
-				keep = true
-			} else if name == "alternate" || name == "canonical" || name == "search" {
-				// urls to versions of document
-				keep = true
-			} else if name == "author" || name == "privacy-policy" || name == "license" || name == "copyright" || name == "terms-of-service" {
-				keep = true
-			} else if name == "manifest" {
-				// web app manifest
-				keep = true
-			}
-
-			// prevent other arbitrary arguments
-			if keep {
-				newNode := html.Node{
-					Type: html.ElementNode,
-					Data: n.Data,
-				}
-				for _, attr := range n.Attr {
-					if attr.Namespace != "" {
-						continue
-					}
-					if slices.Contains(safeAttributes, attr.Key) {
-						newNode.Attr = append(newNode.Attr, attr)
-					}
-				}
-				if len(newNode.Attr) == 0 {
-					continue
-				}
-				entries = append(entries, newNode)
-			}
-
+		keep := false
+		switch node.Data {
 		case "meta":
-
-			safeAttributes := []string{"name", "property", "content"}
-			var name string
-			for _, attr := range n.Attr {
-				if attr.Namespace != "" {
-					continue
-				}
-				if attr.Key == "name" {
-					name = attr.Val
-					break
-				}
-				if attr.Key == "property" && name == "" {
-					name = attr.Val
-				}
+			name := attrs["name"] + attrs["property"] + attrs["itemprop"] + attrs["http-equiv"]
+			if strings.HasPrefix(name, "og:") ||
+				strings.HasPrefix(name, "twitter:") ||
+				strings.HasPrefix(name, "fb:") ||
+				strings.HasPrefix(name, "article:") ||
+				strings.HasPrefix(name, "profile:") ||
+				strings.Contains(":description|keywords|author|theme-color|color-scheme|robots|viewport", name) {
+				keep = true
 			}
-
-			if name == "" {
-				continue
-			}
-
-			// prevent unwanted keys like CSRF and other internal entries to pass through as much as possible
-
-			var keep bool
-			if strings.HasPrefix("og:", name) || strings.HasPrefix("fb:", name) || strings.HasPrefix("twitter:", name) || strings.HasPrefix("profile:", name) {
-				// social / OpenGraph tags
+		case "link":
+			rel := strings.ToLower(attrs["rel"])
+			if slices.Contains([]string{"canonical", "icon", "shortcut icon", "apple-touch-icon", "manifest", "alternate", "author", "license"}, rel) {
 				keep = true
-			} else if name == "vcs" || strings.HasPrefix("vcs:", name) {
-				// source tags
-				keep = true
-			} else if name == "forge" || strings.HasPrefix("forge:", name) {
-				// forge tags
-				keep = true
-			} else if strings.HasPrefix("citation_", name) {
-				// citations for Google Scholar
-				keep = true
-			} else {
-				switch name {
-				case "theme-color", "color-scheme", "origin-trials":
-					// modifies page presentation
-					keep = true
-				case "application-name", "origin", "author", "creator", "contact", "title", "description", "thumbnail", "rating":
-					// standard content tags
-					keep = true
-				case "license", "license:uri", "rights", "rights-standard":
-					// licensing standards
-					keep = true
-				case "go-import", "go-source":
-					// golang tags
-					keep = true
-				case "apple-itunes-app", "appstore:bundle_id", "appstore:developer_url", "appstore:store_id", "google-play-app":
-					// application linking
-					keep = true
-
-				case "verify-v1", "google-site-verification", "p:domain_verify", "yandex-verification", "alexaverifyid":
-					// site verification
-					keep = true
-
-				case "keywords", "robots", "google", "googlebot", "bingbot", "pinterest", "Slurp":
-					// scraper and search content directives
-					keep = true
-				}
-			}
-
-			// prevent other arbitrary arguments
-			if keep {
-				newNode := html.Node{
-					Type: html.ElementNode,
-					Data: n.Data,
-				}
-				for _, attr := range n.Attr {
-					if attr.Namespace != "" {
-						continue
-					}
-					if slices.Contains(safeAttributes, attr.Key) {
-						newNode.Attr = append(newNode.Attr, attr)
-					}
-				}
-				if len(newNode.Attr) == 0 {
-					continue
-				}
-				entries = append(entries, newNode)
 			}
 		}
 
+		if keep {
+			safe = append(safe, node)
+		}
 	}
 
-	state.tagCache.Set(key, entries, time.Hour*6)
-	return entries
+	state.tagCache.Set(key, safe, time.Hour*6)
+	return safe
 }
 
 func (state *State) handleRequest(w http.ResponseWriter, r *http.Request) {

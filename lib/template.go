@@ -53,23 +53,45 @@ func initTemplate(name, data string) error {
 }
 
 func (state *State) addCachedTags(data *challenge.RequestData, r *http.Request, input map[string]any) {
-	proxyMetaTags := data.GetOptBool(challenge.RequestOptProxyMetaTags, false)
-	proxySafeLinkTags := data.GetOptBool(challenge.RequestOptProxySafeLinkTags, false)
-	if proxyMetaTags || proxySafeLinkTags {
-		backend, host := data.BackendHost()
-		if tags := state.fetchTags(host, backend, r, proxyMetaTags, proxySafeLinkTags); len(tags) > 0 {
-			metaTagMap, _ := input["MetaTags"].([]map[string]string)
-			linkTagMap, _ := input["LinkTags"].([]map[string]string)
+	proxyMeta := data.GetOptBool(challenge.RequestOptProxyMetaTags, false)
+	proxyLink := data.GetOptBool(challenge.RequestOptProxySafeLinkTags, false)
 
-			for _, tag := range tags {
-				tagAttrs := make(map[string]string, len(tag.Attr))
-				for _, v := range tag.Attr {
-					tagAttrs[v.Key] = v.Val
-				}
-				metaTagMap = append(metaTagMap, tagAttrs)
-			}
-			input["MetaTags"] = metaTagMap
-			input["LinkTags"] = linkTagMap
+	if !proxyMeta && !proxyLink {
+		return
+	}
+
+	backend, host := data.BackendHost()
+	tags := state.fetchTags(host, backend, r, proxyMeta, proxyLink)
+	if len(tags) == 0 {
+		return
+	}
+
+	// Split back into meta and link
+	var metaTags, linkTags []map[string]string
+	for _, n := range tags {
+		m := make(map[string]string, len(n.Attr))
+		for _, a := range n.Attr {
+			m[a.Key] = a.Val
+		}
+		if n.Data == "meta" {
+			metaTags = append(metaTags, m)
+		} else {
+			linkTags = append(linkTags, m)
+		}
+	}
+
+	if len(metaTags) > 0 {
+		if existing, ok := input["MetaTags"]; ok {
+			input["MetaTags"] = append(existing.([]map[string]string), metaTags...)
+		} else {
+			input["MetaTags"] = metaTags
+		}
+	}
+	if len(linkTags) > 0 {
+		if existing, ok := input["LinkTags"]; ok {
+			input["LinkTags"] = append(existing.([]map[string]string), linkTags...)
+		} else {
+			input["LinkTags"] = linkTags
 		}
 	}
 }
