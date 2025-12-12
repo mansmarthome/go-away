@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Title }}</title>
+  <link rel="icon" href="https://storage.mansmarthome.ru/images/2023/09/favicon.png">
+  <meta name="referrer" content="origin"/>
+  {{ range .MetaTags }}<meta {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{end}}/>{{ end }}
+  <style>
+    :root {
+      --accent: #cc3336;
+      --bg: #ffffff;
+      --bg-secondary: #F7F8FA;
+      --text: #222426;
+      --text-secondary: #73777D;
+      --border: #E1E3E6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #222426;
+        --bg-secondary: #1D1F20;
+        --text: #E1E3E6;
+        --text-secondary: #909499;
+        --border: #3B3D40;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    main {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+    code {
+      display: block;
+      margin-bottom: 2rem;
+    }
+    .captcha-container {
+      margin: 2rem auto;
+      max-width: 304px;
+    }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+    .brand {
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .social-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .social-links a:hover,
+    .social-links a:focus {
+      color: var(--accent);
+    }
+    .meta {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      display: flex;
+      gap: 0.3rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .meta a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    .meta a:hover,
+    .meta a:focus {
+      color: var(--accent);
+    }
+    .request-id {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 2rem 1.5rem; }
+      h1 { font-size: 1.7rem; }
+      p { font-size: 1rem; }
+      main { padding: 1rem; }
+    }
+  </style>
+  {{ range .LinkTags }}<link {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{end}}/>{{ end }}
+  {{ if .HeaderTags }}{{ range .HeaderTags }}{{ . }}{{ end }}{{ end }}
+</head>
+<body>
+  <main>
+    <div class="container">
+      <header class="logo">
+        <img src="https://storage.mansmarthome.ru/images/2023/09/favicon.png" alt="man smart-home">
+      </header>
+
+      <h1 id="title">{{ .Title }}</h1>
+
+      {{ if .Challenge }}
+        <p id="status">Пожалуйста, подтвердите, что вы не робот.<br>Это помогает защитить сайт от спама и ботов.</p>
+      {{ else if .Error }}
+        <code id="status">{{ .Error }}</code>
+      {{ end }}
+
+      {{ range .EndTags }}{{ . }}{{ end }}
+
+      {{ if .EndTags }}<noscript><p>{{ .Strings.Get "noscript_warning" }}</p></noscript>{{ end }}
+
+      <footer class="footer">
+        <!-- <div class="brand">man smart-home</div> -->
+        <div class="social-links">
+          {{ range .Links }}<a href="{{ .URL }}" target="_blank" rel="noopener">{{ .Name }}</a>{{ end }}
+        </div>
+        <div class="meta">
+          <a href="/privacy/" target="_blank" rel="nofollow noopener">Обработка данных</a> &bull;
+          <a href="https://git.gammaspectra.live/git/go-away" target="_blank" rel="nofollow noopener">Защита go-away</a>
+        </div>
+        <div class="request-id">ID: {{ .Id }}</div>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>
