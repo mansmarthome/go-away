@@ -25,7 +25,7 @@ async function setup(config) {
     ], { type: 'application/javascript' }));
     _worker = new Worker(_webWorkerURL);
 
-    return `Difficulty ${difficulty}`
+    return `сложность ${difficulty}…`
 }
 
 function challenge() {
@@ -105,7 +105,7 @@ function processTask() {
                     const nonceNumber = Number(new BigUint64Array(nonce.buffer).at(0))
                     postMessage({
                         result: encodeHex(buf),
-                        info: `iterations ${nonceNumber}`,
+                        info: `итераций: ${nonceNumber}`,
                     });
                     return
                 }
