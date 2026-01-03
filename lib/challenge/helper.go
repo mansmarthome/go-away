@@ -111,7 +111,8 @@ func RedirectUrl(r *http.Request, reg *Registration) (*url.URL, error) {
 	values := uri.Query()
 	values.Set(QueryArgRequestId, data.Id.String())
 	if ref := r.Referer(); ref != "" {
-		values.Set(QueryArgReferer, r.Referer())
+		values.Set(QueryArgReferer, ref)
+		values.Set("utm_referrer", ref)
 	}
 	values.Set(QueryArgChallenge, reg.Name)
 	uri.RawQuery = values.Encode()
