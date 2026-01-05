@@ -93,7 +93,7 @@ func FillRegistration(state challenge.StateInterface, reg *challenge.Registratio
 
 	decayMap := utils.NewDecayMap[[net.IPv6len]byte, utils.DNSBLResponse]()
 
-	dnsbl := utils.NewDNSBL(params.Host, &net.Resolver{
+	dnsbl := utils.NewDNSBL(params.Host + ".", &net.Resolver{
 		PreferGo: true,
 	})
 
