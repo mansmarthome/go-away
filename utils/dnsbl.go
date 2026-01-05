@@ -55,7 +55,7 @@ func (bl DNSBL) Lookup(ctx context.Context, ip net.IP) (DNSBLResponse, error) {
 		target = make([]byte, 0, len(bl.target)+1+len(ip)*4)
 
 		for i := len(ip) - 1; i >= 0; i-- {
-			target = append(target, nibbleTable[ip[i]&0xf], '.', ip[i]>>4, '.')
+			target = append(target, nibbleTable[ip[i]&0xf], '.', nibbleTable[ip[i]>>4], '.')
 		}
 	}
 

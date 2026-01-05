@@ -45,7 +45,7 @@ func lookup(ctx context.Context, decay, timeout time.Duration, dnsbl *utils.DNSB
 	defer cancel()
 	result, err := dnsbl.Lookup(ctx, ip)
 	if err != nil {
-
+		return utils.ResponseUnknown, err
 	}
 	decayMap.Set(key, result, decay)
 
@@ -100,7 +100,7 @@ func FillRegistration(state challenge.StateInterface, reg *challenge.Registratio
 	ob := make(closer)
 
 	go func() {
-		ticker := time.NewTicker(params.Timeout / 3)
+		ticker := time.NewTicker(params.Decay / 3)
 		defer ticker.Stop()
 		for {
 			select {
@@ -119,7 +119,13 @@ func FillRegistration(state challenge.StateInterface, reg *challenge.Registratio
 
 		data := challenge.RequestDataFromContext(r.Context())
 
+		start := time.Now()
+
 		result, err := lookup(r.Context(), params.Decay, params.Timeout, dnsbl, decayMap, data.RemoteAddress.Addr().Unmap().AsSlice())
+
+		duration := time.Since(start).Milliseconds()
+		data.State.Logger(r).Info("dnsbl lookup", "address", data.RemoteAddress.Addr().String(), "result", result, "duration", duration, "err", err)
+
 		if err != nil {
 			data.State.Logger(r).Debug("dnsbl lookup failed", "address", data.RemoteAddress.Addr().String(), "result", result, "err", err)
 		}
