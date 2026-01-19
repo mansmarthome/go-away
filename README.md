@@ -1,10 +1,12 @@
-### <a id=why></a>
 # go-away
 
 Self-hosted abuse detection and rule enforcement against low-effort mass AI scraping and bots. Uses conventional non-nuclear options.
 
-[![Build Status](https://ci.gammaspectra.live/api/badges/git/go-away/status.svg)](https://ci.gammaspectra.live/git/go-away)
-[![Go Reference](https://pkg.go.dev/badge/git.gammaspectra.live/git/go-away.svg)](https://pkg.go.dev/git.gammaspectra.live/git/go-away)
+This is a customized fork of [go-away](https://git.gammaspectra.live/git/go-away) with additional features and fixes:
+- **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service.
+- **IPv6 improvements** - IPv6 support fixes in DNSBL and ASN lookups.
+- **Proxy meta tags fixes** - Enhanced metadata handling.
+- **[man smart-home](https://mansmarthome.info/) customizations**.
 
 go-away sits in between your site and the Internet / upstream proxy.
 
@@ -14,15 +16,35 @@ The tool is designed highly flexible so the operator can minimize impact to legi
 
 [Challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges) can be transparent (not shown to user, depends on backend or other logic), [non-JavaScript](#non-javascript-challenges) (challenges common browser properties), or [custom JavaScript](#custom-javascript-wasm-challenges) (from Proof of Work to fingerprinting or Captcha is supported)
 
-See _[Why do this?](#why-do-this)_ section for the challenges and reasoning behind this tool. 
+See _[Why do this?](#why-do-this)_ section for the challenges and reasoning behind this tool.
 
 **This documentation and go-away are in active development.** See [What's left?](#what-s-left) section for a breakdown.
 
 Check this README for a general introduction. An [in-depth Wiki](https://git.gammaspectra.live/git/go-away/wiki/) is available and being improved.
 
+## Features of This Fork
+
+### Yandex SmartCaptcha Support
+
+Integrated support for [Yandex SmartCaptcha](https://yandex.cloud/en/docs/smartcaptcha/quickstart) service, providing an alternative captcha solution with advanced bot detection capabilities.
+
+### IPv6 Enhancements
+
+- Fixed IPv6 handling in DNSBL lookups.
+- Improved ASN (Autonomous System Number) detection for IPv6 addresses.
+- Better IPv6 support throughout the network filtering system.
+
+### Proxy Detection Improvements
+
+- Improved metadata extraction from headers.
+
+### Custom Configuration Examples
+
+- Pre-configured examples tailored for the [man smart-home](https://mansmarthome.info/) blog.
+
 ## Support
 
-If you have some suggestion or issue, feel free to open a [New Issue](https://git.gammaspectra.live/git/go-away/issues/new) on the repository. 
+If you have some suggestion or issue, feel free to open a [New Issue](https://github.com/mansmarthome/go-away/issues/new) on the repository.
 
 [Pull Requests](https://git.gammaspectra.live/git/go-away/pulls) are encouraged and desired.
 
@@ -48,7 +70,6 @@ See the [Installation page](https://git.gammaspectra.live/git/go-away/wiki/Insta
 
 go-away can be directly run from command line, via pre-built containers, or your own built containers.
 
-
 ## Features
 
 ### Rich rule matching
@@ -72,13 +93,11 @@ path (string) - HTTP request Path
 query (map[string]string) - HTTP request Query arguments
 headers (map[string]string) - HTTP request headers
 fp (map[string]string) - Available fingerprints
-  
+
 Only available when TLS is enabled
    fp.ja3n (string) JA3N TLS Fingerprint
    fp.ja4 (string) JA4 TLS Fingerprint
 ```
-
-
 
 ### Package path
 
@@ -195,7 +214,6 @@ Example for _regex_:
       regex: "(?P<prefix>[0-9a-f:]+::/[0-9]+)"
 ```
 
-
 ### Multiple backend support
 
 Multiple backends are supported, and rules specific on backend can be defined, and conditions and rules can match this as well.
@@ -240,8 +258,6 @@ You can define snippets to be included. YAML anchors/aliases are supported.
 
 See [examples/snippets/](examples/snippets/) for some defaults including indexer bots, challenges and other general matches.
 
-
-
 ## Why do this?
 In the past few years this small git instance has been hit by waves and waves of scraping.
 This was usually fought back by random useragent blocks for bots that did not follow [robots.txt](/robots.txt), until the past half year, where low-effort mass scraping was used more prominently.
@@ -254,7 +270,7 @@ At some point about 300Mbit/s of incoming requests (not including the responses)
 
 **If AI is so smart, why not just git clone the repositories?**
 
-* Wikimedia has posted about [How crawlers impact the operations of the Wikimedia projects](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/) [01/04/2025]
+* Wikimedia has posted about [How crawlers impact the operations of the Wikimedia projects](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the operations-of-the-wikimedia-projects/) [01/04/2025]
 
 * Xe (Anubis creator) has written about similar frustrations in several blogposts:
   * [Amazon's AI crawler is making my git server unstable](https://xeiaso.net/notes/2025/amazon-crawler/) [01/17/2025]
@@ -287,7 +303,7 @@ go-away offers a highly configurable set of challenges and rules that you can ad
 
 ## What's left?
 
-go-away has most of the desired features from the original checklist that was made in its development. 
+go-away has most of the desired features from the original checklist that was made in its development.
 However, a few points are left before go-away can be called v1.0.0:
 
 * [x] Several parts of the code are going through a refactor, which won't impact end users or operators.
@@ -306,8 +322,6 @@ However, a few points are left before go-away can be called v1.0.0:
 * [x] Expose metrics for challenge solve rates and acting on them.
   * [ ] Metrics for common network ranges / AS / useragent
 
-
-
 ## Other Similar Projects
 
 |                                         Project                                          |                                                                                                                                                      Source Code                                                                                                                                                      | Description                                                                                                                | Method                                       |
@@ -323,7 +337,3 @@ However, a few points are left before go-away can be called v1.0.0:
 ## Development
 
 This Go package can be used as a command on `git.gammaspectra.live/git/go-away/cmd/go-away` or a library under `git.gammaspectra.live/git/go-away/lib`
-
-
-
-
