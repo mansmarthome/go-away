@@ -99,6 +99,7 @@ func FillRegistration(state challenge.StateInterface, reg *challenge.Registratio
 			"Challenge":  reg.Name,
 			"VerifyPath": reg.Path + challenge.VerifyChallengeUrlSuffix,
 			"Id":         data.Id.String(),
+			"Strings":    data.State.Strings(),
 		}); err != nil {
 			return challenge.VerifyResultFail
 		}

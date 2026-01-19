@@ -78,9 +78,35 @@
       display: block;
       margin-bottom: 2rem;
     }
-    .captcha-container {
-      margin: 2rem auto;
-      max-width: 304px;
+    .bars-container {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .bar {
+      width: 6px;
+      height: 24px;
+      background-color: var(--accent);
+      border-radius: 2px;
+      animation: bar-wave 1.2s ease-in-out infinite both;
+    }
+    .bar:nth-child(1) {
+      animation-delay: -0.4s;
+    }
+    .bar:nth-child(2) {
+      animation-delay: -0.2s;
+    }
+    @keyframes bar-wave {
+      0%, 40%, 100% {
+        transform: scaleY(0.6);
+        opacity: 0.6;
+      }
+      20% {
+        transform: scaleY(1.2);
+        opacity: 1;
+      }
     }
     .footer {
       margin-top: 3rem;
@@ -132,10 +158,10 @@
       margin-top: 0.3rem;
       font-style: italic;
     }
-
+    .hidden { display: none; }
     @media (max-width: 480px) {
       .container { padding: 2rem 1.5rem; }
-      h1 { font-size: 1.7rem; }
+      h1 { font-size: 1.6rem; }
       p { font-size: 1rem; }
       main { padding: 1rem; }
     }
@@ -153,23 +179,31 @@
       <h1 id="title">{{ .Title }}</h1>
 
       {{ if .Challenge }}
-        <p id="status">Пожалуйста, подтвердите, что вы не робот.<br>Это помогает защитить сайт от спама и ботов.</p>
+        <p id="status">{{ .Strings.Get "status_loading_challenge" }} <em>{{ .Challenge }}</em>...</p>
       {{ else if .Error }}
         <code id="status">{{ .Error }}</code>
+      {{ else }}
+        <p id="status">{{ .Strings.Get "status_loading" }}</p>
       {{ end }}
+
+      <div id="bars-loader" class="bars-container">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
 
       {{ range .EndTags }}{{ . }}{{ end }}
 
-      {{ if .EndTags }}<noscript><p>{{ .Strings.Get "noscript_warning" }}</p></noscript>{{ end }}
+      {{ if .EndTags }}<noscript>{{ .Strings.Get "noscript_warning" }}</noscript>{{ end }}
 
       <footer class="footer">
-        <!-- <div class="brand">man smart-home</div> -->
+        <div class="brand">man smart-home</div>
         <div class="social-links">
           {{ range .Links }}<a href="{{ .URL }}" target="_blank" rel="noopener">{{ .Name }}</a>{{ end }}
         </div>
         <div class="meta">
-          <a href="/privacy/" target="_blank" rel="nofollow noopener">Обработка данных</a> &bull;
-          <a href="https://git.gammaspectra.live/git/go-away" target="_blank" rel="nofollow noopener">Защита go-away</a>
+          <a href="/privacy/" target="_blank" rel="nofollow noopener" title="Политика в отношении обработки персональных данных">Обработка данных</a> &bull;
+          <a href="https://git.gammaspectra.live/git/go-away" target="_blank" rel="nofollow noopener" title="Система защиты от ботов">go-away</a>
         </div>
         <div class="request-id">ID: {{ .Id }}</div>
       </footer>
