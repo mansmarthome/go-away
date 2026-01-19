@@ -25,7 +25,7 @@ async function setup(config) {
     ], { type: 'application/javascript' }));
     _worker = new Worker(_webWorkerURL);
 
-    return `сложность ${difficulty}…`
+    return `Сложность ${difficulty}...`
 }
 
 function challenge() {

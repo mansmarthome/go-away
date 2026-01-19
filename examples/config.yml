@@ -43,14 +43,13 @@ links:
 #  anubis: An Anubis-like template with no configuration parameters. Supports Logo.
 #  forgejo: Looks like native Forgejo. Includes logos and resources from your instance. Supports Theme, Logo.
 #
-#challenge-template: "anubis"
+challenge-template: "mansmarthome"
 
 # Allows overriding specific settings set on templates. Key-Values will be passed to templates as-is
 challenge-template-overrides:
-  # Set template theme if supported
-  #Theme: "forgejo-auto"
-  # Set logo on template if supported
-  #Logo: "/my/custom/logo/path.png"
+  Logo: "https://storage.mansmarthome.ru/images/2023/09/favicon.png"
+  Favicon: "https://storage.mansmarthome.ru/images/2023/09/favicon.svg"
+  Brand: "man smart-home"
 
 # Advanced backend configuration
 # Backends setup via cmdline will be added here
@@ -87,31 +86,27 @@ backends:
 # Note raw HTML is allowed, be careful with it.
 # Default strings exist in code, uncomment any to set it
 strings:
-  #title_challenge: "Checking you are not a bot"
-  #title_error: "Oh no!"
-  #noscript_warning: "<p>Sadly, you may need to enable JavaScript to get past this challenge. This is required because AI companies have changed the social contract around how website hosting works.</p>"
-  #details_title: "Why am I seeing this?"
-  #details_text: >
-  #  <p>
-  #  You are seeing this because the administrator of this website has set up <a href="https://git.gammaspectra.live/git/go-away">go-away</a>
-  #  to protect the server against the scourge of <a href="https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/">AI companies aggressively scraping websites</a>.
-  #  </p>
-  #  <p>
-  #  Mass scraping can and does cause downtime for the websites, which makes their resources inaccessible for everyone.
-  #  </p>
-  #  <p>
-  #  Please note that some challenges requires the use of modern JavaScript features and some plugins may disable these.
-  #  Disable such plugins for this domain (for example, JShelter) if you encounter any issues.
-  #  </p>
-
-  #details_contact_admin_with_request_id: "If you have any issues contact the site administrator and provide the following Request Id"
-
-  #button_refresh_page: "Refresh page"
-
-  #status_loading_challenge: "Loading challenge"
-  #status_starting_challenge: "Starting challenge"
-  #status_loading: "Loading..."
-  #status_calculating: "Calculating..."
-  #status_challenge_success: "Challenge success!"
-  #status_challenge_done_took: "Done! Took"
-  #status_error: "Error:"
+  title_challenge: "Требуется подтверждение"
+  title_error: "Ошибка:"
+  noscript_warning: >
+    <p>Для прохождения проверки безопасности требуется включить JavaScript в вашем браузере.</p>
+    <p>Это стандартное требование для защиты от автоматических программ и обеспечения работы страницы.</p>
+  details_title: "Пожалуйста, подтвердите, что вы не робот.<br>Это необходимо для защиты сайта."
+  details_text: >
+    <p>Наша система безопасности обнаружила необычную активность, которая может быть связана с автоматическими запросами.</p>
+    <p>Эта проверка помогает защитить сайт от перегрузки и обеспечивает его стабильную работу для всех посетителей.</p>
+    <p>Для работы проверки требуется JavaScript. Если у вас возникают проблемы, попробуйте:</p>
+    <ul>
+      <li>Обновить страницу</li>
+      <li>Временно отключить блокировщики JavaScript или антитрекинги</li>
+      <li>Проверить настройки расширений браузера (например, JShelter, uBlock Origin и подобные)</li>
+    </ul>
+  details_contact_admin_with_request_id: "Если проблема повторяется, обратитесь к администратору и сообщите идентификатор запроса:"
+  button_refresh_page: "Обновить страницу и повторить"
+  status_loading_challenge: "Подготовка проверки"
+  status_starting_challenge: "Запуск проверки безопасности..."
+  status_loading: "Загрузка..."
+  status_calculating: "Анализ параметров браузера..."
+  status_challenge_success: "Проверка пройдена!"
+  status_challenge_done_took: "Время:"
+  status_error: "Не удалось завершить проверку:"

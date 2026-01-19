@@ -1,12 +1,15 @@
+{{ $logo := print .Path "/assets/static/logo.png?cacheBust=" .Random }}{{ if .Logo }}{{ $logo = .Logo }}{{ end }}
+{{ $favicon := $logo }}{{ if .Favicon }}{{ $favicon = .Favicon }}{{ end }}
+{{ $brand := "man smart-home" }}{{ if .Brand }}{{ $brand = .Brand }}{{ end }}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ .Title }}</title>
-  <link rel="icon" href="https://storage.mansmarthome.ru/images/2023/09/favicon.png">
-  <meta name="referrer" content="origin"/>
-  {{ range .MetaTags }}<meta {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{end}}/>{{ end }}
+  <link rel="icon" href="{{ $favicon }}" type="image/svg+xml" />
+  <meta name="referrer" content="origin">
+  {{ range .MetaTags }}<meta {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{ end }}/>{{ end }}
   <style>
     :root {
       --accent: #cc3336;
@@ -27,6 +30,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
     html, body {
       height: 100%;
       margin: 0;
@@ -38,6 +42,7 @@
       color: var(--text);
       line-height: 1.6;
     }
+
     main {
       min-height: 100%;
       display: flex;
@@ -77,7 +82,9 @@
     code {
       display: block;
       margin-bottom: 2rem;
+      word-wrap: break-word;
     }
+
     .bars-container {
       min-height: 40px;
       display: flex;
@@ -108,6 +115,7 @@
         opacity: 1;
       }
     }
+
     .footer {
       margin-top: 3rem;
       padding-top: 3rem;
@@ -158,22 +166,23 @@
       margin-top: 0.3rem;
       font-style: italic;
     }
+
     .hidden { display: none; }
+
     @media (max-width: 480px) {
-      .container { padding: 2rem 1.5rem; }
-      h1 { font-size: 1.6rem; }
-      p { font-size: 1rem; }
+      html { font-size: 13px; }
+      .container { padding: 2rem 1rem; }
       main { padding: 1rem; }
     }
   </style>
-  {{ range .LinkTags }}<link {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{end}}/>{{ end }}
+  {{ range .LinkTags }}<link {{ range $key, $value := . }}{{ $key | attr }}="{{ $value }}" {{ end }}/>{{ end }}
   {{ if .HeaderTags }}{{ range .HeaderTags }}{{ . }}{{ end }}{{ end }}
 </head>
 <body>
   <main>
     <div class="container">
       <header class="logo">
-        <img src="https://storage.mansmarthome.ru/images/2023/09/favicon.png" alt="man smart-home">
+        <img src="{{ $logo }}" alt="{{ $brand }}">
       </header>
 
       <h1 id="title">{{ .Title }}</h1>
@@ -186,24 +195,26 @@
         <p id="status">{{ .Strings.Get "status_loading" }}</p>
       {{ end }}
 
-      <div id="bars-loader" class="bars-container">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
-      </div>
+      {{ if .Challenge }}
+        <div id="loading-indicator" class="bars-container">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      {{ end }}
 
       {{ range .EndTags }}{{ . }}{{ end }}
 
       {{ if .EndTags }}<noscript>{{ .Strings.Get "noscript_warning" }}</noscript>{{ end }}
 
       <footer class="footer">
-        <div class="brand">man smart-home</div>
+        <div class="brand">{{ $brand }}</div>
         <div class="social-links">
           {{ range .Links }}<a href="{{ .URL }}" target="_blank" rel="noopener">{{ .Name }}</a>{{ end }}
         </div>
         <div class="meta">
           <a href="/privacy/" target="_blank" rel="nofollow noopener" title="Политика в отношении обработки персональных данных">Обработка данных</a> &bull;
-          <a href="https://git.gammaspectra.live/git/go-away" target="_blank" rel="nofollow noopener" title="Система защиты от ботов">go-away</a>
+          <a href="https://github.com/mansmarthome/go-away" target="_blank" rel="nofollow noopener" title="Система защиты от ботов">Защита go-away</a>
         </div>
         <div class="request-id">ID: {{ .Id }}</div>
       </footer>
