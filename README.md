@@ -42,6 +42,11 @@ Integrated support for [Yandex SmartCaptcha](https://yandex.cloud/en/docs/smartc
 
 - Pre-configured examples tailored for the [man smart-home](https://mansmarthome.info/) blog.
 
+<p>
+  <img height="420" alt="Yandex SmartCaptcha" src="https://github.com/user-attachments/assets/c78f1ceb-4661-4ebc-b548-85959d3e687b" />
+  <img height="420" alt="PoW" src="https://github.com/user-attachments/assets/8035583d-d75b-44e4-81bb-0ca3b3264a46" />
+</p>
+
 ## Support
 
 If you have some suggestion or issue, feel free to open a [New Issue](https://github.com/mansmarthome/go-away/issues/new) on the repository.
