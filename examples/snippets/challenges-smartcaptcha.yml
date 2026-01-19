@@ -1,0 +1,6 @@
+challenges:
+  yandex-smartcaptcha:
+    runtime: 'yandex-smartcaptcha'
+    parameters:
+      sitekey: 'ysc1_...'
+      secretkey: 'ysc2_...'
