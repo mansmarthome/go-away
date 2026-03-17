@@ -15,6 +15,8 @@ const (
 	RuleActionBLOCK RuleAction = "BLOCK"
 	// RuleActionCODE Returns a specified HTTP code
 	RuleActionCODE RuleAction = "CODE"
+	// RuleActionLOG Logs request details
+	RuleActionLOG RuleAction = "LOG"
 
 	// RuleActionDROP Drops the connection without sending a reply
 	RuleActionDROP RuleAction = "DROP"
