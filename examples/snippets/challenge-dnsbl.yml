@@ -2,5 +2,6 @@ challenges:
   dnsbl:
     runtime: dnsbl
     parameters:
-      dnsbl-decay: 1h
-      dnsbl-timeout: 1s
+      dnsbl-host: sbl-xbl.spamhaus.org
+      dnsbl-decay: 24h
+      dnsbl-timeout: 500ms

@@ -41,7 +41,7 @@ func lookup(ctx context.Context, decay, timeout time.Duration, dnsbl *utils.DNSB
 		return result, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	result, err := dnsbl.Lookup(ctx, ip)
 	if err != nil {
