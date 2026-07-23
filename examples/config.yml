@@ -47,8 +47,8 @@ challenge-template: "mansmarthome"
 
 # Allows overriding specific settings set on templates. Key-Values will be passed to templates as-is
 challenge-template-overrides:
-  Logo: "https://storage.mansmarthome.ru/images/2023/09/favicon.png"
-  Favicon: "https://storage.mansmarthome.ru/images/2023/09/favicon.svg"
+  # Logo: "https://cdn.your.website/favicon.png"
+  # Favicon: "https://cdn.your.website/favicon.svg"
   Brand: "man smart-home"
 
 # Advanced backend configuration
