@@ -14,7 +14,7 @@ steps:
   - apk update
   - apk add --no-cache git
   - mkdir .bin
-  - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
+  - go build -tags coraza.rule.no_regex_multiline -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
   image: golang:1.25-alpine3.21
   mirror: https://mirror.gcr.io
@@ -86,7 +86,7 @@ steps:
   - apk update
   - apk add --no-cache git
   - mkdir .bin
-  - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
+  - go build -tags coraza.rule.no_regex_multiline -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
   image: golang:1.25-alpine3.21
   mirror: https://mirror.gcr.io
@@ -158,7 +158,7 @@ steps:
   - apk update
   - apk add --no-cache git
   - mkdir .bin
-  - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
+  - go build -tags coraza.rule.no_regex_multiline -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
   image: golang:1.25-alpine3.21
   mirror: https://mirror.gcr.io

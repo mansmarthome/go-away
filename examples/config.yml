@@ -110,3 +110,11 @@ strings:
   status_challenge_success: "Проверка пройдена!"
   status_challenge_done_took: "Время:"
   status_error: "Не удалось завершить проверку:"
+
+# Coraza WAF. Disabled by default. engine: detection-only logs matches and continues;
+# engine: on denies only when Coraza interrupts. directives-file is optional SecLang,
+# loaded after CRS setup and before the community rules. Not loaded unless enabled.
+#waf:
+#  enabled: false
+#  engine: detection-only
+#  directives-file: "examples/waf-ghost.conf"

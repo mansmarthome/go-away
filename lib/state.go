@@ -11,7 +11,9 @@ import (
 	"git.gammaspectra.live/git/go-away/lib/challenge"
 	"git.gammaspectra.live/git/go-away/lib/policy"
 	"git.gammaspectra.live/git/go-away/lib/settings"
+	"git.gammaspectra.live/git/go-away/lib/waf"
 	"git.gammaspectra.live/git/go-away/utils"
+	corazatypes "github.com/corazawaf/coraza/v3/types"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/yl2chen/cidranger"
@@ -47,6 +49,8 @@ type State struct {
 	challenges challenge.Register
 
 	rules []RuleState
+
+	waf *waf.Engine
 
 	close chan struct{}
 
@@ -232,6 +236,16 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 	}
 	conditionReplacer := strings.NewReplacer(replacements...)
 
+	if state.opt.WAF.Enabled {
+		started := time.Now()
+		engine, err := waf.Compile(state.opt.WAF, state.onWAFMatch)
+		if err != nil {
+			return nil, fmt.Errorf("waf: %w", err)
+		}
+		state.waf = engine
+		slog.Warn("loaded waf", "engine", state.opt.WAF.Engine, "duration", time.Since(started))
+	}
+
 	state.challenges = make(challenge.Register)
 
 	//TODO: move this to self-contained challenge files
@@ -277,19 +291,45 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 	return state, nil
 }
 
+func (state *State) WAF() *waf.Engine {
+	return state.waf
+}
+
+func (state *State) onWAFMatch(rule corazatypes.MatchedRule) {
+	id := rule.Rule().ID()
+	waf.RecordMatch(id, false)
+	msg := rule.Message()
+	if len(msg) > 256 {
+		msg = msg[:256]
+	}
+	slog.Warn("waf match",
+		"request_id", rule.TransactionID(),
+		"rule_id", id,
+		"msg", msg,
+		"uri", rule.URI(),
+		"client_ip", rule.ClientIPAddress(),
+	)
+}
+
 func (state *State) Close() error {
 	select {
 	case <-state.close:
 	default:
 		close(state.close)
+		var err error
 		for _, c := range state.challenges {
 			if c.Object != nil {
-				err := c.Object.Close()
-				if err != nil {
-					return err
+				if cerr := c.Object.Close(); cerr != nil && err == nil {
+					err = cerr
 				}
 			}
 		}
+		if state.waf != nil {
+			if werr := state.waf.Close(); werr != nil && err == nil {
+				err = werr
+			}
+		}
+		return err
 	}
 
 	return nil

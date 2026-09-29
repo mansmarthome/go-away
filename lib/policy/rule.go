@@ -31,6 +31,9 @@ const (
 
 	// RuleActionCONTEXT Changes Request Context information or properties
 	RuleActionCONTEXT RuleAction = "CONTEXT"
+
+	// RuleActionWAF Inspects the request with Coraza. An interruption denies the request. No interruption continues.
+	RuleActionWAF RuleAction = "WAF"
 )
 
 type Rule struct {

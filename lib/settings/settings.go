@@ -22,6 +22,8 @@ type Settings struct {
 
 	// ChallengeTemplateOverrides Key/Value overrides for the current chosen template
 	ChallengeTemplateOverrides map[string]string `yaml:"challenge-template-overrides"`
+
+	WAF WAF `yaml:"waf"`
 }
 
 type Link struct {

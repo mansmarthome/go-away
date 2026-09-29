@@ -2,6 +2,7 @@ package lib
 
 import (
 	"git.gammaspectra.live/git/go-away/lib/policy"
+	"git.gammaspectra.live/git/go-away/lib/waf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -45,6 +46,7 @@ func (metrics *stateMetrics) Reset() {
 	metrics.rules.Reset()
 	metrics.actions.Reset()
 	metrics.challenges.Reset()
+	waf.ResetMetrics()
 }
 
 var metrics = newMetrics()
