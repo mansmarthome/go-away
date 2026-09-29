@@ -1,9 +1,10 @@
 # go-away
 
-Self-hosted abuse detection and rule enforcement against low-effort mass AI scraping and bots. Uses conventional non-nuclear options.
+Self-hosted abuse detection and rule enforcement against low-effort mass scraping and bots. Uses conventional non-nuclear options.
 
 This is a customized fork of [go-away](https://git.gammaspectra.live/git/go-away) with additional features and fixes:
-- **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service.
+- **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service. Captcha is the soft-block for bots and scrapers; it is not used as a WAF action.
+- **Coraza WAF** - Embedded [OWASP Coraza](https://github.com/corazawaf/coraza) with the [OWASP Core Rule Set](https://coreruleset.org/) for request inspection (SQLi, XSS, LFI, RCE, protocol attacks).
 - **IPv6 improvements** - IPv6 support fixes in DNSBL and ASN lookups.
 - **Proxy meta tags fixes** - Enhanced metadata handling.
 - **[man smart-home](https://mansmarthome.info/) customizations**.
@@ -38,9 +39,40 @@ Integrated support for [Yandex SmartCaptcha](https://yandex.cloud/en/docs/smartc
 
 - Improved metadata extraction from headers.
 
+### Coraza WAF
+
+[Coraza](https://github.com/corazawaf/coraza) is embedded as a library. It does not replace CEL bot rules or captcha. Community CRS rules cover injection and protocol attacks that are tedious to write by hand. Bot, ASN, and path policy stay in the policy file.
+
+The engine is off unless enabled in the settings file (`--config`):
+
+```yaml
+waf:
+  enabled: true
+  engine: detection-only # detection-only | on
+  directives-file: "examples/waf-ghost.conf" # optional SecLang
+```
+
+`detection-only` evaluates CRS and logs matches, then continues to the next go-away rule. `on` denies only when Coraza interrupts, using the same error page as `deny`. A clean request still continues down the rule list. Start in `detection-only` and flip to `on` after the logs are quiet.
+
+Invoke it with a policy action, so ordering stays with the other rules:
+
+```yaml
+- name: coraza
+  action: waf
+```
+
+Place that rule before any `pass` that short-circuits the rest of the list. A `pass` or a successful `challenge` proxies immediately and never reaches a later `waf` rule.
+
+The engine loads `@coraza.conf-recommended`, `@crs-setup.conf.example`, an optional `directives-file`, then `@owasp_crs/*.conf`. Request bodies are inspected and then restored for the backend. Response bodies are not inspected.
+
+`directives-file` is for site exceptions and extra CVE signatures. [examples/waf-ghost.conf](examples/waf-ghost.conf) is a starting point for Ghost: it allows `PUT`/`PATCH`/`DELETE`, and it stops XSS/SQLi/RCE scoring on editor body fields for `/ghost/api/admin/posts` and `/pages` only. URI and header checks on those requests still run. It is not loaded unless you point `directives-file` at it.
+
+Requires Go 1.25. The `go-away` binary is built with `-tags coraza.rule.no_regex_multiline`.
+
 ### Custom Configuration Examples
 
 - Pre-configured examples tailored for the [man smart-home](https://mansmarthome.info/) blog.
+- [examples/waf-ghost.conf](examples/waf-ghost.conf) — optional CRS exclusions for a Ghost admin API.
 
 <p>
   <img height="420" alt="Yandex SmartCaptcha" src="https://github.com/user-attachments/assets/c78f1ceb-4661-4ebc-b548-85959d3e687b" />
