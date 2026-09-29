@@ -2,3 +2,6 @@
 *.gz
 *.br
 *.zst
+
+# Local Kilo agent plans and state (not for source control)
+.kilo/
