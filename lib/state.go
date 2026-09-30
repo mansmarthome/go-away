@@ -129,6 +129,7 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 
 	for k, network := range p.Networks {
 		state.networks[k] = sync.OnceValue[cidranger.Ranger](func() cidranger.Ranger {
+			loadStarted := time.Now()
 			ranger := cidranger.NewPCTrieRanger()
 			for i, e := range network {
 				prefixes, err := func() ([]net.IPNet, error) {
@@ -203,7 +204,7 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 				}
 			}
 
-			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len())
+			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len(), "duration_ms", time.Since(loadStarted).Milliseconds())
 			return ranger
 		})
 	}

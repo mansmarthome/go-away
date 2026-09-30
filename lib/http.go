@@ -153,10 +153,12 @@ func (state *State) handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, rule := range state.rules {
+		ruleStarted := time.Now()
 		next, err := rule.Evaluate(lg, w, r, func() http.Handler {
 			cleanupRequest(r, true, rule.Name, rule.Action)
 			return getBackend()
 		})
+		logSlowRule(lg, rule.Name, time.Since(ruleStarted))
 		if err != nil {
 			state.ErrorPage(w, r, http.StatusInternalServerError, err, "")
 			panic(err)
@@ -176,6 +178,15 @@ func (state *State) handleRequest(w http.ResponseWriter, r *http.Request) {
 		cleanupRequest(r, false, "DEFAULT", policy.RuleActionPASS)
 		return getBackend()
 	})
+}
+
+const slowLog = 500 * time.Millisecond
+
+func logSlowRule(lg *slog.Logger, rule string, d time.Duration) {
+	if d < slowLog {
+		return
+	}
+	lg.Warn("rule slow", "rule", rule, "duration_ms", d.Milliseconds())
 }
 
 func (state *State) setupRoutes() error {
@@ -198,9 +209,20 @@ func (state *State) setupRoutes() error {
 }
 
 func (state *State) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	started := time.Now()
 	r, data := challenge.CreateRequestData(r, state)
 
 	data.EvaluateChallenges(w, r)
+	challenges := time.Since(started)
 
 	state.Mux.ServeHTTP(w, r)
+	total := time.Since(started)
+	if total < slowLog {
+		return
+	}
+	state.Logger(r).Warn("request slow",
+		"duration_ms", total.Milliseconds(),
+		"challenges_ms", challenges.Milliseconds(),
+		"handler_ms", (total - challenges).Milliseconds(),
+	)
 }
