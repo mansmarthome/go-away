@@ -110,6 +110,7 @@ strings:
   status_challenge_success: "Проверка пройдена!"
   status_challenge_done_took: "Время:"
   status_error: "Не удалось завершить проверку:"
+  status_captcha_unavailable: "Не удалось загрузить проверку. Доступ к <em>smartcaptcha.yandexcloud.net</em> может быть ограничен настройками сети или расширением браузера."
 
 # Coraza WAF. Disabled by default. engine: detection-only logs matches and continues;
 # engine: on denies only when Coraza interrupts. directives-file is optional SecLang,

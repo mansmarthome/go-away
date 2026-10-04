@@ -13,8 +13,7 @@ var DefaultStrings = utils.NewStrings(map[string]string{
 	"details_title": "Why am I seeing this?",
 	"details_text": `
 <p>
-	You are seeing this because the administrator of this website has set up <a href="https://git.gammaspectra.live/git/go-away">go-away</a> 
-	to protect the server against the scourge of <a href="https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/">AI companies aggressively scraping websites</a>.
+	You are seeing this because the administrator of this website has set up <a href="https://github.com/mansmarthome/go-away">go-away</a>.
 </p>
 <p>
 	Mass scraping can and does cause downtime for the websites, which makes their resources inaccessible for everyone.
@@ -35,4 +34,5 @@ var DefaultStrings = utils.NewStrings(map[string]string{
 	"status_challenge_success":   "Challenge success!",
 	"status_challenge_done_took": "Done! Took",
 	"status_error":               "Error:",
+	"status_captcha_unavailable": "Could not load the verification widget. <em>smartcaptcha.yandexcloud.net</em> may be blocked by the network or a browser extension. Refresh the page or try another network.",
 })

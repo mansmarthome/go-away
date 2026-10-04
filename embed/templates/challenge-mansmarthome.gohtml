@@ -116,6 +116,34 @@
       }
     }
 
+    .button-primary {
+      cursor: pointer;
+      display: inline-block;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: all linear .1s;
+      font-size: 1rem;
+      position: relative;
+      height: 2.5rem;
+      margin: 0 .2rem;
+      padding: 0 1.2rem;
+      color: #fff;
+      background: var(--accent);
+      border-radius: 2rem;
+      line-height: 2.5rem;
+      text-align: center;
+      box-shadow: rgba(0,0,0,.16) 0px 6px 12px -2px;
+      color: hsla(0, 0%, 100%, .8);
+      border-color: hsla(0, 0%, 100%, .8);
+    }
+
+    .button-primary:hover,
+    .button-primary:focus {
+      color: #fff;
+      border-color: #fff;
+      opacity: .92;
+    }
+
     .footer {
       margin-top: 3rem;
       padding-top: 3rem;
@@ -201,6 +229,7 @@
           <div class="bar"></div>
           <div class="bar"></div>
         </div>
+        <a id="refresh-button" class="button-primary hidden" href="{{ .Page }}">{{ .Strings.Get "button_refresh_page" }}</a>
       {{ end }}
 
       {{ range .EndTags }}{{ . }}{{ end }}

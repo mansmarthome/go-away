@@ -1,17 +1,17 @@
 package yandex_smartcaptcha
 
 import (
-	_ "embed"
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"git.gammaspectra.live/git/go-away/lib/challenge"
+	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"html/template"
 	"io"
 	"net/http"
-	"github.com/goccy/go-yaml"
 	"time"
 )
 
@@ -106,7 +106,7 @@ func FillRegistration(state challenge.StateInterface, reg *challenge.Registratio
 
 		state.ChallengePage(w, r, state.Settings().ChallengeResponseCode, reg, map[string]any{
 			"HeaderTags": []template.HTML{
-				template.HTML(`<script src="https://smartcaptcha.yandexcloud.net/captcha.js?render=onload&onload=yandexSmartCaptchaOnload" async defer></script>`),
+				template.HTML(`<script src="https://smartcaptcha.yandexcloud.net/captcha.js?render=onload&onload=yandexSmartCaptchaOnload" async defer onerror="yandexSmartCaptchaOnerror()"></script>`),
 			},
 			"EndTags": []template.HTML{
 				template.HTML(`<div id="yandex-smartcaptcha-container" style="margin: auto;"></div>`),
