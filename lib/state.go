@@ -24,7 +24,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -32,7 +31,7 @@ import (
 
 type State struct {
 	client  *http.Client
-	radb    *utils.RADb
+	asnDB   utils.ASNLookup
 	urlPath string
 
 	programEnv *cel.Env
@@ -44,7 +43,7 @@ type State struct {
 	opt      settings.Settings
 	settings policy.StateSettings
 
-	networks map[string]func() cidranger.Ranger
+	networks map[string]func() *networkSet
 
 	challenges challenge.Register
 
@@ -70,9 +69,23 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 			return http.ErrUseLastResponse
 		},
 	}
-	state.radb, err = utils.NewRADb()
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize RADb client: %w", err)
+	if err = validatePolicyNetworks(p); err != nil {
+		return nil, err
+	}
+	var asnDB utils.ASNLookup
+	defer func() {
+		if err != nil && asnDB != nil {
+			_ = asnDB.Close()
+		}
+	}()
+	if state.Settings().ASNDatabasePath != "" {
+		asnDB, err = utils.OpenASNDatabase(state.Settings().ASNDatabasePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open ASN database: %w", err)
+		}
+		state.asnDB = asnDB
+	} else if policyUsesASN(p) {
+		return nil, fmt.Errorf("policy uses asn: entries; pass --asn-db")
 	}
 
 	state.urlPath = state.Settings().BasePath
@@ -123,15 +136,23 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 		return nil, fmt.Errorf("no template defined for %s", state.opt.ChallengeTemplate)
 	}
 
-	state.networks = make(map[string]func() cidranger.Ranger)
+	state.networks = make(map[string]func() *networkSet)
 
 	networkCache := utils.CachePrefix(state.Settings().Cache, "networks/")
 
 	for k, network := range p.Networks {
-		state.networks[k] = sync.OnceValue[cidranger.Ranger](func() cidranger.Ranger {
+		state.networks[k] = sync.OnceValue(func() *networkSet {
 			loadStarted := time.Now()
 			ranger := cidranger.NewPCTrieRanger()
+			asns := make(map[uint32]struct{})
 			for i, e := range network {
+				if e.ASN != nil {
+					slog.Debug("loading ASN", "network", k, "asn", *e.ASN)
+					asns[uint32(*e.ASN)] = struct{}{}
+				}
+				if !e.HasPrefixSource() {
+					continue
+				}
 				prefixes, err := func() ([]net.IPNet, error) {
 					var useCache bool
 
@@ -141,10 +162,6 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 						useCache = true
 						sum := sha256.Sum256([]byte(*e.Url))
 						cacheKey += hex.EncodeToString(sum[:4])
-					} else if e.ASN != nil {
-						slog.Debug("loading ASN", "network", k, "asn", *e.ASN)
-						useCache = true
-						cacheKey += strconv.FormatInt(int64(*e.ASN), 10)
 					}
 
 					var cached []net.IPNet
@@ -166,7 +183,7 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 						}
 					}
 
-					prefixes, err := e.FetchPrefixes(state.client, state.radb)
+					prefixes, err := e.FetchPrefixes(state.client)
 					if err != nil {
 						if len(cached) > 0 {
 							// use cached meanwhile
@@ -189,8 +206,6 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 				if err != nil {
 					if e.Url != nil {
 						slog.Error("error loading network list", "network", k, "url", *e.Url, "error", err)
-					} else if e.ASN != nil {
-						slog.Error("error loading ASN", "network", k, "asn", *e.ASN, "error", err)
 					} else {
 						slog.Error("error loading list", "network", k, "error", err)
 					}
@@ -204,8 +219,8 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 				}
 			}
 
-			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len(), "duration_ms", time.Since(loadStarted).Milliseconds())
-			return ranger
+			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len(), "asns", len(asns), "duration_ms", time.Since(loadStarted).Milliseconds())
+			return &networkSet{ranger: ranger, asns: asns, db: state.asnDB}
 		})
 	}
 
@@ -330,8 +345,35 @@ func (state *State) Close() error {
 				err = werr
 			}
 		}
+		if state.asnDB != nil {
+			if aerr := state.asnDB.Close(); aerr != nil && err == nil {
+				err = aerr
+			}
+		}
 		return err
 	}
 
+	return nil
+}
+
+func policyUsesASN(p policy.Policy) bool {
+	for _, entries := range p.Networks {
+		for _, e := range entries {
+			if e.ASN != nil {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func validatePolicyNetworks(p policy.Policy) error {
+	for name, entries := range p.Networks {
+		for _, e := range entries {
+			if e.ASN != nil && *e.ASN < 0 {
+				return fmt.Errorf("network %s: invalid ASN %d", name, *e.ASN)
+			}
+		}
+	}
 	return nil
 }

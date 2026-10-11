@@ -16,4 +16,6 @@ type StateSettings struct {
 	BackendIpHeader string
 
 	ChallengeResponseCode int
+
+	ASNDatabasePath string
 }

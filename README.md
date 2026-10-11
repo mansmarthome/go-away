@@ -5,6 +5,7 @@ Self-hosted abuse detection and rule enforcement against low-effort mass scrapin
 This is a customized fork of [go-away](https://git.gammaspectra.live/git/go-away) with additional features and fixes:
 - **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service. Captcha is the soft-block for bots and scrapers; it is not used as a WAF action.
 - **Coraza WAF** - Embedded [OWASP Coraza](https://github.com/corazawaf/coraza) with the [OWASP Core Rule Set](https://coreruleset.org/) for request inspection (SQLi, XSS, LFI, RCE, protocol attacks).
+- **Local ASN database** - `asn:` entries are matched against a local MMDB (`--asn-db`) instead of querying `whois.radb.net`. IPv4 and IPv6 both work when the file contains both.
 - **IPv6 improvements** - IPv6 support fixes in DNSBL and ASN lookups.
 - **Proxy meta tags fixes** - Enhanced metadata handling.
 - **[man smart-home](https://mansmarthome.info/) customizations**.
@@ -250,6 +251,14 @@ Example for _regex_:
     - url: https://www.cloudflare.com/ips-v6
       regex: "(?P<prefix>[0-9a-f:]+::/[0-9]+)"
 ```
+
+`asn:` entries are matched against a local MMDB, not a live whois query. Pass `--asn-db /var/lib/go-away/iptoasn.mmdb`. The file must contain `autonomous_system_number`. go-away does not download or refresh it. Build it outside the process, for example with [iptoasn-go](https://github.com/case/iptoasn-go):
+
+```
+iptoasn --download -o /var/lib/go-away/iptoasn.mmdb
+```
+
+A daily refresh is enough. `--check` fails when the policy uses `asn:` and `--asn-db` is missing or unreadable. A file older than 7 days is still used, with a warning.
 
 ### Multiple backend support
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"git.gammaspectra.live/git/go-away/utils"
 	"github.com/itchyny/gojq"
 	"io"
 	"net"
@@ -26,7 +25,11 @@ type Network struct {
 	Prefixes []string `yaml:"prefixes,omitempty"`
 }
 
-func (n Network) FetchPrefixes(c *http.Client, whois *utils.RADb) (output []net.IPNet, err error) {
+func (n Network) HasPrefixSource() bool {
+	return n.Url != nil || n.File != nil || len(n.Prefixes) > 0
+}
+
+func (n Network) FetchPrefixes(c *http.Client) (output []net.IPNet, err error) {
 
 	if len(n.Prefixes) > 0 {
 		for _, prefix := range n.Prefixes {
@@ -56,12 +59,6 @@ func (n Network) FetchPrefixes(c *http.Client, whois *utils.RADb) (output []net.
 		}
 		defer file.Close()
 		reader = file
-	} else if n.ASN != nil {
-		result, err := whois.FetchASNets(*n.ASN)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch ASN %d: %v", *n.ASN, err)
-		}
-		return result, nil
 	} else {
 		if len(output) > 0 {
 			return output, nil

@@ -79,6 +79,7 @@ func main() {
 	backendIpHeader := flag.String("backend-ip-header", "", "Backend HTTP header to set the client IP address from, if empty defaults to leaving Client header alone (X-Real-Ip, X-Client-Ip, X-Forwarded-For, Cf-Connecting-Ip, etc.)")
 
 	cachePath := flag.String("cache", path.Join(os.TempDir(), "go_away_cache"), "path to temporary cache directory")
+	asnDB := flag.String("asn-db", "", "path to an MMDB with autonomous_system_number; required when the policy uses asn:. go-away does not download or refresh this file")
 
 	policyFile := flag.String("policy", "", "path to policy YAML file")
 	var policySnippets MultiVar
@@ -261,6 +262,7 @@ func main() {
 			ClientIpHeader:        *clientIpHeader,
 			BackendIpHeader:       *backendIpHeader,
 			ChallengeResponseCode: http.StatusForbidden,
+			ASNDatabasePath:       *asnDB,
 		}
 
 		state, err := lib.NewState(*p, opt, stateSettings)

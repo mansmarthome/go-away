@@ -1,5 +1,6 @@
 # Example cmdline (forward requests from upstream to port :8080)
-# $ go-away --bind :8080 --backend git.example.com=http://forgejo:3000 --policy examples/forgejo.yml --policy-snippets example/snippets/ --challenge-template forgejo --challenge-template-theme forgejo-auto
+# asn: entries require --asn-db. go-away does not refresh the file. --check fails without it.
+# $ go-away --bind :8080 --backend git.example.com=http://forgejo:3000 --policy examples/forgejo.yml --policy-snippets example/snippets/ --challenge-template forgejo --challenge-template-theme forgejo-auto --asn-db /var/lib/go-away/iptoasn.mmdb
 
 
 
