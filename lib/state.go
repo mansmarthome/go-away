@@ -145,10 +145,20 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 			loadStarted := time.Now()
 			ranger := cidranger.NewPCTrieRanger()
 			asns := make(map[uint32]struct{})
+			countries := make(map[string]struct{})
 			for i, e := range network {
 				if e.ASN != nil {
 					slog.Debug("loading ASN", "network", k, "asn", *e.ASN)
 					asns[uint32(*e.ASN)] = struct{}{}
+				}
+				if e.Country != nil {
+					code, ok := policyCountry(*e.Country)
+					if !ok {
+						slog.Error("invalid country", "network", k, "country", *e.Country)
+						continue
+					}
+					slog.Debug("loading country", "network", k, "country", code)
+					countries[code] = struct{}{}
 				}
 				if !e.HasPrefixSource() {
 					continue
@@ -219,8 +229,8 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 				}
 			}
 
-			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len(), "asns", len(asns), "duration_ms", time.Since(loadStarted).Milliseconds())
-			return &networkSet{ranger: ranger, asns: asns, db: state.asnDB}
+			slog.Warn("loaded network prefixes", "network", k, "count", ranger.Len(), "asns", len(asns), "countries", len(countries), "duration_ms", time.Since(loadStarted).Milliseconds())
+			return &networkSet{ranger: ranger, asns: asns, countries: countries, db: state.asnDB}
 		})
 	}
 
@@ -359,7 +369,7 @@ func (state *State) Close() error {
 func policyUsesASN(p policy.Policy) bool {
 	for _, entries := range p.Networks {
 		for _, e := range entries {
-			if e.ASN != nil {
+			if e.ASN != nil || e.Country != nil {
 				return true
 			}
 		}
@@ -373,7 +383,25 @@ func validatePolicyNetworks(p policy.Policy) error {
 			if e.ASN != nil && *e.ASN < 0 {
 				return fmt.Errorf("network %s: invalid ASN %d", name, *e.ASN)
 			}
+			if e.Country != nil {
+				if _, ok := policyCountry(*e.Country); !ok {
+					return fmt.Errorf("network %s: invalid country %q", name, *e.Country)
+				}
+			}
 		}
 	}
 	return nil
+}
+
+func policyCountry(code string) (string, bool) {
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if len(code) != 2 {
+		return "", false
+	}
+	for i := 0; i < len(code); i++ {
+		if code[i] < 'A' || code[i] > 'Z' {
+			return "", false
+		}
+	}
+	return code, true
 }

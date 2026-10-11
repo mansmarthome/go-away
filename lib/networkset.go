@@ -7,9 +7,10 @@ import (
 )
 
 type networkSet struct {
-	ranger cidranger.Ranger
-	asns   map[uint32]struct{}
-	db     utils.ASNLookup
+	ranger    cidranger.Ranger
+	asns      map[uint32]struct{}
+	countries map[string]struct{}
+	db        utils.ASNLookup
 }
 
 func (n *networkSet) Contains(ip net.IP) (bool, error) {
@@ -19,16 +20,25 @@ func (n *networkSet) Contains(ip net.IP) (bool, error) {
 			return ok, err
 		}
 	}
-	if len(n.asns) == 0 || n.db == nil {
+	if n.db == nil || (len(n.asns) == 0 && len(n.countries) == 0) {
 		return false, nil
 	}
-	asn, ok, err := n.db.Lookup(ip)
+	rec, ok, err := n.db.Lookup(ip)
 	if err != nil {
 		return false, err
 	}
-	if !ok || asn == 0 {
+	if !ok {
 		return false, nil
 	}
-	_, hit := n.asns[asn]
-	return hit, nil
+	if rec.ASN != 0 {
+		if _, hit := n.asns[rec.ASN]; hit {
+			return true, nil
+		}
+	}
+	if rec.Country != "" {
+		if _, hit := n.countries[rec.Country]; hit {
+			return true, nil
+		}
+	}
+	return false, nil
 }

@@ -5,7 +5,7 @@ Self-hosted abuse detection and rule enforcement against low-effort mass scrapin
 This is a customized fork of [go-away](https://git.gammaspectra.live/git/go-away) with additional features and fixes:
 - **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service. Captcha is the soft-block for bots and scrapers; it is not used as a WAF action.
 - **Coraza WAF** - Embedded [OWASP Coraza](https://github.com/corazawaf/coraza) with the [OWASP Core Rule Set](https://coreruleset.org/) for request inspection (SQLi, XSS, LFI, RCE, protocol attacks).
-- **Local ASN database** - `asn:` entries are matched against a local MMDB (`--asn-db`) instead of querying `whois.radb.net`. IPv4 and IPv6 both work when the file contains both.
+- **Local ASN database** - `asn:` and `country:` entries are matched against a local MMDB (`--asn-db`) instead of querying `whois.radb.net`. IPv4 and IPv6 both work when the file contains both. `country:` is the announcing ASN's country, not the visitor's location.
 - **IPv6 improvements** - IPv6 support fixes in DNSBL and ASN lookups.
 - **Proxy meta tags fixes** - Enhanced metadata handling.
 - **[man smart-home](https://mansmarthome.info/) customizations**.
@@ -258,7 +258,15 @@ Example for _regex_:
 iptoasn --download -o /var/lib/go-away/iptoasn.mmdb
 ```
 
-A daily refresh is enough. `--check` fails when the policy uses `asn:` and `--asn-db` is missing or unreadable. A file older than 7 days is still used, with a warning.
+A daily refresh is enough. `--check` fails when the policy uses `asn:` or `country:` and `--asn-db` is missing or unreadable. A file older than 7 days is still used, with a warning.
+
+`country:` uses the same file. The code is the country of the announcing ASN, not the visitor's city or physical location. A VPN, anycast, or CDN address shows the origin network's country. A database without `country.iso_code` still loads; country rules do not match, and startup logs a warning.
+
+```yaml
+networks:
+  bangladesh:
+    - country: BD
+```
 
 ### Multiple backend support
 

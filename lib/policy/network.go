@@ -14,9 +14,10 @@ import (
 
 type Network struct {
 	// Fetches
-	Url  *string `yaml:"url,omitempty"`
-	File *string `yaml:"file,omitempty"`
-	ASN  *int    `yaml:"asn,omitempty"`
+	Url     *string `yaml:"url,omitempty"`
+	File    *string `yaml:"file,omitempty"`
+	ASN     *int    `yaml:"asn,omitempty"`
+	Country *string `yaml:"country,omitempty"`
 
 	// Filtering
 	JqPath *string `yaml:"jq-path,omitempty"`

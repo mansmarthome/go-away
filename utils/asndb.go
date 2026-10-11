@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/oschwald/maxminddb-golang"
@@ -12,8 +13,13 @@ import (
 
 const asnDatabaseMaxAge = 7 * 24 * time.Hour
 
+type ASNRecord struct {
+	ASN     uint32
+	Country string
+}
+
 type ASNLookup interface {
-	Lookup(ip net.IP) (asn uint32, ok bool, err error)
+	Lookup(ip net.IP) (ASNRecord, bool, error)
 	Close() error
 }
 
@@ -22,7 +28,10 @@ type asnDatabase struct {
 }
 
 type asnRecord struct {
-	ASN uint32 `maxminddb:"autonomous_system_number"`
+	ASN     uint32 `maxminddb:"autonomous_system_number"`
+	Country struct {
+		ISOCode string `maxminddb:"iso_code"`
+	} `maxminddb:"country"`
 }
 
 func OpenASNDatabase(path string) (ASNLookup, error) {
@@ -51,9 +60,9 @@ func OpenASNDatabase(path string) (ASNLookup, error) {
 	return db, nil
 }
 
-func (db *asnDatabase) Lookup(ip net.IP) (uint32, bool, error) {
+func (db *asnDatabase) Lookup(ip net.IP) (ASNRecord, bool, error) {
 	if ip == nil {
-		return 0, false, fmt.Errorf("nil IP")
+		return ASNRecord{}, false, fmt.Errorf("nil IP")
 	}
 	if ip4 := ip.To4(); ip4 != nil {
 		ip = ip4
@@ -61,12 +70,20 @@ func (db *asnDatabase) Lookup(ip net.IP) (uint32, bool, error) {
 	var record asnRecord
 	_, ok, err := db.reader.LookupNetwork(ip, &record)
 	if err != nil {
-		return 0, false, err
+		return ASNRecord{}, false, err
 	}
 	if !ok {
-		return 0, false, nil
+		return ASNRecord{}, false, nil
 	}
-	return record.ASN, true, nil
+	return ASNRecord{ASN: record.ASN, Country: normalizeCountry(record.Country.ISOCode)}, true, nil
+}
+
+func normalizeCountry(code string) string {
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if code == "" || code == "NONE" {
+		return ""
+	}
+	return code
 }
 
 func (db *asnDatabase) Close() error {
@@ -77,14 +94,24 @@ func (db *asnDatabase) Close() error {
 }
 
 func (db *asnDatabase) sanity() error {
+	var sawASN, sawCountry bool
 	for _, raw := range []string{"1.1.1.1", "8.8.8.8"} {
-		asn, ok, err := db.Lookup(net.ParseIP(raw))
+		rec, ok, err := db.Lookup(net.ParseIP(raw))
 		if err != nil {
 			return fmt.Errorf("ASN database lookup %s: %w", raw, err)
 		}
-		if ok && asn != 0 {
-			return nil
+		if ok && rec.ASN != 0 {
+			sawASN = true
+		}
+		if rec.Country != "" {
+			sawCountry = true
 		}
 	}
-	return fmt.Errorf("ASN database did not return an ASN for 1.1.1.1 or 8.8.8.8; expected autonomous_system_number")
+	if !sawASN {
+		return fmt.Errorf("ASN database did not return an ASN for 1.1.1.1 or 8.8.8.8; expected autonomous_system_number")
+	}
+	if !sawCountry {
+		slog.Warn("ASN database has no country codes; country rules will not match")
+	}
+	return nil
 }
