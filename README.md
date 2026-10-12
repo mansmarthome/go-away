@@ -1,11 +1,11 @@
 # go-away
 
-Self-hosted abuse detection and rule enforcement against low-effort mass scraping and bots. Uses conventional non-nuclear options.
+Self-hosted abuse detection and rule enforcement against low-effort mass scraping, behavioral bots, SEO crawlers, and other abusive automation. Uses conventional non-nuclear options.
 
 This is a customized fork of [go-away](https://git.gammaspectra.live/git/go-away) with additional features and fixes:
-- **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service. Captcha is the soft-block for bots and scrapers; it is not used as a WAF action.
+- **Yandex SmartCaptcha support** - Integration with Yandex SmartCaptcha cloud service. Captcha is the soft-block for bots and scrapers.
 - **Coraza WAF** - Embedded [OWASP Coraza](https://github.com/corazawaf/coraza) with the [OWASP Core Rule Set](https://coreruleset.org/) for request inspection (SQLi, XSS, LFI, RCE, protocol attacks).
-- **Local ASN database** - `asn:` and `country:` entries are matched against a local MMDB (`--asn-db`) instead of querying `whois.radb.net`. IPv4 and IPv6 both work when the file contains both. `country:` is the announcing ASN's country, not the visitor's location.
+- **Local ASN database** - `asn:` and `country:` entries are matched against a local MMDB (`--asn-db`) instead of querying `whois.radb.net`. `country:` is the announcing ASN's country, not the visitor's location.
 - **IPv6 improvements** - IPv6 support fixes in DNSBL and ASN lookups.
 - **Proxy meta tags fixes** - Enhanced metadata handling.
 - **[man smart-home](https://mansmarthome.info/) customizations**.
@@ -19,8 +19,6 @@ The tool is designed highly flexible so the operator can minimize impact to legi
 [Challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges) can be transparent (not shown to user, depends on backend or other logic), [non-JavaScript](#non-javascript-challenges) (challenges common browser properties), or [custom JavaScript](#custom-javascript-wasm-challenges) (from Proof of Work to fingerprinting or Captcha is supported)
 
 See _[Why do this?](#why-do-this)_ section for the challenges and reasoning behind this tool.
-
-**This documentation and go-away are in active development.** See [What's left?](#what-s-left) section for a breakdown.
 
 Check this README for a general introduction. An [in-depth Wiki](https://git.gammaspectra.live/git/go-away/wiki/) is available and being improved.
 
@@ -84,7 +82,7 @@ Requires Go 1.25. The `go-away` binary is built with `-tags coraza.rule.no_regex
 
 If you have some suggestion or issue, feel free to open a [New Issue](https://github.com/mansmarthome/go-away/issues/new) on the repository.
 
-[Pull Requests](https://git.gammaspectra.live/git/go-away/pulls) are encouraged and desired.
+[Pull Requests](https://github.com/mansmarthome/go-away/pulls) are encouraged and desired.
 
 For real-time chat and other support join IRC on [#go-away](ircs://irc.libera.chat/#go-away) on Libera.Chat [[WebIRC]](https://web.libera.chat/?nick=Guest?#go-away). The channel may not be monitored at all times, feel free to ping the operators there.
 
@@ -313,68 +311,18 @@ You can define snippets to be included. YAML anchors/aliases are supported.
 See [examples/snippets/](examples/snippets/) for some defaults including indexer bots, challenges and other general matches.
 
 ## Why do this?
-In the past few years this small git instance has been hit by waves and waves of scraping.
-This was usually fought back by random useragent blocks for bots that did not follow [robots.txt](/robots.txt), until the past half year, where low-effort mass scraping was used more prominently.
 
-Recently these networks go from using residential IP blocks to sending requests at several hundred requests per second.
+This fork is focused on behavioral bots, SEO crawlers, AI crawlers, and other abusive automation. The goal is to reduce the impact of automated traffic that ignores `robots.txt`, consumes resources, skews analytics, scrapes content, probes endpoints, or generates fake engagement.
 
-If the server gets sluggish, more requests pile up. Even when denied they scrape for weeks later. Effectively spray and pray scraping, process later.
+The pattern is often low-effort and high-volume: spray requests across many paths, follow every link, hammer pagination, and retry failed requests. Even when denied, the traffic can continue for weeks. When the server slows down, more requests pile up, which makes the problem worse.
 
-At some point about 300Mbit/s of incoming requests (not including the responses) was hitting the server. And all of them nonsense URLs, or hitting archive/bundle downloads per commit.
+This fork keeps the original go-away approach: flexible rules, multiple challenge types, and careful targeting, so legitimate users are not affected more than necessary. It adds Yandex SmartCaptcha, Coraza WAF, a local ASN database, IPv6 fixes, and other operational improvements useful for sites dealing with behavioral bots, SEO bots, and scrapers.
 
-**If AI is so smart, why not just git clone the repositories?**
+If automated clients have to solve a challenge, run JavaScript, or otherwise behave more like a browser, the cost of mass scraping rises and the volume of low-effort abuse usually drops.
 
-* Wikimedia has posted about [How crawlers impact the operations of the Wikimedia projects](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the operations-of-the-wikimedia-projects/) [01/04/2025]
+### Can bots adapt?
 
-* Xe (Anubis creator) has written about similar frustrations in several blogposts:
-  * [Amazon's AI crawler is making my git server unstable](https://xeiaso.net/notes/2025/amazon-crawler/) [01/17/2025]
-  * [Anubis works](https://xeiaso.net/notes/2025/anubis-works/) [04/12/2025]
-
-* Drew DeVault (sourcehut) has posted several articles and outages regarding the same issues:
-  * [Drew Blog: Please stop externalizing your costs directly into my face](https://drewdevault.com/2025/03/17/2025-03-17-Stop-externalizing-your-costs-on-me.html) [17/03/2025]
-    * (fun tidbit: I'm the one quoted as having the feedback discussion interrupted to deal with bots!)
-   * [sourcehut status: LLM crawlers continue to DDoS SourceHut](https://status.sr.ht/issues/2025-03-17-git.sr.ht-llms/) [17/03/2025]
-  * [sourcehut Blog: You cannot have our user's data](https://sourcehut.org/blog/2025-04-15-you-cannot-have-our-users-data/) [15/04/2025]
-
-* Others were also suffering at the same time [[1]](https://donotsta.re/notice/AreSNZlRlJv73AW7tI) [[2]](https://community.ipfire.org/t/suricata-ruleset-to-prevent-ai-scraping/11974) [[3]](https://gabrielsimmer.com/blog/stop-scraping-git-forge) [[4]](https://gabrielsimmer.com/blog/stop-scraping-git-forge) [[5]](https://blog.nytsoi.net/2025/03/01/obliterated-by-ai).
-
----
-Initially I deployed Anubis, and yeah, it does work!
-
-This tool started as a way to replace [Anubis](https://anubis.techaro.lol/) as it was not found as featureful as desired, and the impact was too high.
-
-go-away may not be as straight to configure as Anubis but this was chosen to reduce impact on legitimate users, and offers many more options to dynamically target new waves.
-
-### Can't scrapers adapt?
-
-Yes, they can. At the moment their spray-and-pray approach is cheap for them.
-
-If they have to start adding an active browser in their scraping, that makes their collection expensive and slow.
-
-This would more or less eliminate the high rate low effort passive scraping and replace it with an active model.
-
-go-away offers a highly configurable set of challenges and rules that you can adapt to new ways.
-
-## What's left?
-
-go-away has most of the desired features from the original checklist that was made in its development.
-However, a few points are left before go-away can be called v1.0.0:
-
-* [x] Several parts of the code are going through a refactor, which won't impact end users or operators.
-* [ ] Documentation is lacking and a more extensive one with inline example is in the works.
-* [x] Policy file syntax is going to stay mostly unchanged, except in the challenges definition section.
-* [ ] Allow end users to pick fallback challenges if any fail, specially with custom ones.
-* [ ] Replace Anubis-like default template with own one.
-* [x] Define strings and multi-language support for quick modification by operators without custom templates.
-* [ ] Have highly tested paths that match examples.
-* [x] Caching of temporary fetches, for example, network ranges.
-* [x] Allow live and dynamic policy reloading.
-* [x] Multiple domains / subdomains -> one backend handling, CEL rules for backends
-* [ ] Merge all rules and conditions into one large AST for higher performance.
-* [ ] Explore exposing a module for direct Caddy usage.
-* [x] More defined way of picking HTTP/HTTP(s) listeners and certificates.
-* [x] Expose metrics for challenge solve rates and acting on them.
-  * [ ] Metrics for common network ranges / AS / useragent
+Yes. The goal is not to stop every determined actor. The goal is to make low-effort, high-volume abuse expensive and noisy enough that it is no longer worth it. go-away provides configurable challenges and rules that can be adapted as traffic patterns change.
 
 ## Other Similar Projects
 
