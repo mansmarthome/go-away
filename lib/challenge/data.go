@@ -365,7 +365,7 @@ func (d *RequestData) RequestHeaders(headers http.Header) {
 		}
 	}
 
-	if ja4, ok := d.fp["fp4"]; ok {
+	if ja4, ok := d.fp["ja4"]; ok {
 		headers.Set("X-TLS-Fingerprint-JA4", ja4)
 	}
 
