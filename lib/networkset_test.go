@@ -70,6 +70,16 @@ func TestNetworkSetContains(t *testing.T) {
 		t.Fatalf("asn 0: ok=%v err=%v", ok, err)
 	}
 
+	asnZeroHit := &networkSet{
+		ranger: cidranger.NewPCTrieRanger(),
+		asns:   map[uint32]struct{}{0: {}},
+		db:     &fakeASN{rec: utils.ASNRecord{ASN: 0}, ok: true},
+	}
+	ok, err = asnZeroHit.Contains(net.ParseIP("45.45.46.10"))
+	if err != nil || !ok {
+		t.Fatalf("asn 0 hit: ok=%v err=%v", ok, err)
+	}
+
 	mixed := &networkSet{
 		ranger: ranger,
 		asns:   map[uint32]struct{}{64500: {}},

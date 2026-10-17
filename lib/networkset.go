@@ -30,10 +30,8 @@ func (n *networkSet) Contains(ip net.IP) (bool, error) {
 	if !ok {
 		return false, nil
 	}
-	if rec.ASN != 0 {
-		if _, hit := n.asns[rec.ASN]; hit {
-			return true, nil
-		}
+	if _, hit := n.asns[rec.ASN]; hit {
+		return true, nil
 	}
 	if rec.Country != "" {
 		if _, hit := n.countries[rec.Country]; hit {
