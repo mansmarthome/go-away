@@ -22,7 +22,7 @@ local Build(mirror, go, alpine, os, arch) = {
                 "apk update",
                 "apk add --no-cache git",
                 "mkdir .bin",
-                "go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away",
+                "go build -tags coraza.rule.no_regex_multiline -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away",
                 "go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime",
             ],
         },
@@ -82,64 +82,8 @@ local Build(mirror, go, alpine, os, arch) = {
     ]
 };
 
-local Publish(mirror, registry, repo, secret, go, alpine, os, arch, trigger, platforms, extra) = {
-    kind: "pipeline",
-    type: "docker",
-    name: "publish-" + go + "-alpine" + alpine + "-" + secret,
-    platform: {
-        os: os,
-        arch: arch,
-    },
-    trigger: trigger,
-    steps: [
-        {
-            name: "setup-buildkitd",
-            image: "alpine:" + alpine,
-            mirror: mirror,
-            commands: [
-                "echo '[registry.\"docker.io\"]' > buildkitd.toml",
-                "echo '  mirrors = [\"mirror.gcr.io\"]' >> buildkitd.toml"
-            ],
-        },
-        {
-            name: "docker",
-            image: "plugins/buildx",
-            privileged: true,
-            environment: {
-                DOCKER_BUILDKIT: "1",
-                SOURCE_DATE_EPOCH: 0,
-                TZ: "UTC",
-                LC_ALL: "C",
-                PLUGIN_BUILDER_CONFIG: "buildkitd.toml",
-                PLUGIN_BUILDER_DRIVER: "docker-container",
-            },
-            settings: {
-                  registry: registry,
-                  repo: repo,
-                  mirror: mirror,
-                  compress: true,
-                  platform: platforms,
-                  build_args: {
-                    from_builder: "golang:" + go +"-alpine" + alpine,
-                    from: "alpine:" + alpine,
-                  },
-                  auto_tag_suffix: "alpine" + alpine,
-                  username: {
-                    from_secret: secret + "_username",
-                  },
-                  password: {
-                    from_secret: secret + "_password",
-                  },
-            } + extra,
-        },
-    ]
-};
-
-#
-local containerArchitectures = ["linux/amd64", "linux/arm64", "linux/riscv64"];
-
 local alpineVersion = "3.21";
-local goVersion = "1.24";
+local goVersion = "1.25";
 
 local mirror = "https://mirror.gcr.io";
 
@@ -149,14 +93,4 @@ local mirror = "https://mirror.gcr.io";
 
     # Test PRs
     Build(mirror, goVersion, alpineVersion, "linux", "amd64") + {"name": "test-pr", "trigger": {event: ["pull_request"], }},
-
-    # latest
-    Publish(mirror, "git.gammaspectra.live", "git.gammaspectra.live/git/go-away", "git", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-git"},
-    Publish(mirror, "codeberg.org", "codeberg.org/gone/go-away", "codeberg", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-codeberg"},
-    Publish(mirror, "ghcr.io", "ghcr.io/weebdatahoarder/go-away", "github", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-github"},
-
-    # modern
-    Publish(mirror, "git.gammaspectra.live", "git.gammaspectra.live/git/go-away", "git", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
-    Publish(mirror, "codeberg.org", "codeberg.org/gone/go-away", "codeberg", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
-    Publish(mirror, "ghcr.io", "ghcr.io/weebdatahoarder/go-away", "github", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
 ]

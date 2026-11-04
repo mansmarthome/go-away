@@ -20,7 +20,7 @@ The tool is designed highly flexible so the operator can minimize impact to legi
 
 See _[Why do this?](#why-do-this)_ section for the challenges and reasoning behind this tool.
 
-Check this README for a general introduction. An [in-depth Wiki](https://git.gammaspectra.live/git/go-away/wiki/) is available and being improved.
+Check this README for a general introduction. Deeper notes are on the upstream [wiki](https://git.gammaspectra.live/git/go-away/wiki/). This fork does not host that wiki.
 
 ## Features of This Fork
 
@@ -96,19 +96,13 @@ If you have some suggestion or issue, feel free to open a [New Issue](https://gi
 
 For real-time chat and other support join IRC on [#go-away](ircs://irc.libera.chat/#go-away) on Libera.Chat [[WebIRC]](https://web.libera.chat/?nick=Guest?#go-away). The channel may not be monitored at all times, feel free to ping the operators there.
 
-## Code Mirrors
+## Repository
 
-Source code is automatically pushed to the following mirrors. Packages are also mirrored on Codeberg and GitHub.
+This fork is hosted at [github.com/mansmarthome/go-away](https://github.com/mansmarthome/go-away).
 
-[![GammaSpectra.live](https://img.shields.io/badge/GammaSpectra.live-main+packages-green?style=flat&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9Ii0zMDAgLTMwMCA2MDAgNjAwIj4KPGNpcmNsZSByPSI1MCIvPgo8cGF0aCBkPSJNNzUsMCBBIDc1LDc1IDAgMCwwIDM3LjUsLTY0Ljk1MiBMIDEyNSwtMjE2LjUwNiBBIDI1MCwyNTAgMCAwLDEgMjUwLDAgeiIgaWQ9ImJsZCIvPgo8dXNlIHhsaW5rOmhyZWY9IiNibGQiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz4KPHVzZSB4bGluazpocmVmPSIjYmxkIiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+Cjwvc3ZnPg==&labelColor=fff)](https://git.gammaspectra.live/git/go-away) ![](https://git.gammaspectra.live/git/go-away/badges/stars.svg?style=flat) [![](https://git.gammaspectra.live/git/go-away/badges/issues/open.svg?style=flat)](https://git.gammaspectra.live/git/go-away/issues?state=open) [![](https://git.gammaspectra.live/git/go-away/badges/pulls/open.svg?style=flat)](https://git.gammaspectra.live/git/go-away/pulls?state=open)
+[![GitHub](https://img.shields.io/badge/GitHub-mansmarthome/go--away-blue?style=flat&logo=github&labelColor=fff&logoColor=24292f)](https://github.com/mansmarthome/go-away) ![](https://img.shields.io/github/stars/mansmarthome/go-away?style=flat)
 
-[![Codeberg](https://img.shields.io/badge/Codeberg-mirror+packages-2185D0?style=flat&logo=codeberg&labelColor=fff)](https://codeberg.org/gone/go-away) ![](https://codeberg.org/gone/go-away/badges/stars.svg?style=flat)
-
-[![GitHub](https://img.shields.io/badge/GitHub-mirror+packages-blue?style=flat&logo=github&labelColor=fff&logoColor=24292f)](https://github.com/WeebDataHoarder/go-away) ![](https://img.shields.io/github/stars/WeebDataHoarder/go-away?style=flat)
-
-[![sourcehut](https://img.shields.io/badge/sourcehut-mirror-blue?style=flat&logo=sourcehut&labelColor=fff&logoColor=000)](https://git.sr.ht/~datahoarder/go-away)
-
-Note that issues or pull requests should be issued on the [main Forge](https://git.gammaspectra.live/git/go-away).
+Issues and pull requests for this fork belong there. The original project is [git.gammaspectra.live/git/go-away](https://git.gammaspectra.live/git/go-away). Its Codeberg, sourcehut, and `WeebDataHoarder/go-away` mirrors are not this fork.
 
 ## Installation and Setup
 
@@ -184,7 +178,7 @@ Most templates support overriding the logo. Specify that either via the [config.
 
 In addition to the common PASS / CHALLENGE / DENY rules, go-away offers more actions, plus any more extensible via code.
 
-See the [Rule Actions page](https://git.gammaspectra.live/git/go-away/wiki/Rule-Actions) on the Wiki.
+See the upstream [Rule Actions page](https://git.gammaspectra.live/git/go-away/wiki/Rule-Actions).
 
 ### Multiple challenge matching
 
@@ -212,7 +206,7 @@ Several challenges that do not require JavaScript are offered, some targeting th
 
 These can be used for light checking of requests that eliminate most of the low effort scraping.
 
-See [Transparent challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#transparent) and [Non-JavaScript challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#non-javascript) on the Wiki for more information.
+See the upstream wiki for [transparent challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#transparent) and [non-JavaScript challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#non-javascript).
 
 ### Custom JavaScript / WASM challenges
 
@@ -220,7 +214,7 @@ A WASM interface for server-side proof generation and checking is offered. We pr
 
 You can implement Captchas or other browser fingerprinting tests within this interface.
 
-See [Custom JavaScript challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#custom-javascript) on the Wiki for more information.
+See the upstream wiki for [custom JavaScript challenges](https://git.gammaspectra.live/git/go-away/wiki/Challenges#custom-javascript).
 
 ### Upstream PROXY support
 
@@ -354,4 +348,6 @@ Yes. The goal is not to stop every determined actor. The goal is to make low-eff
 
 ## Development
 
-This Go package can be used as a command on `git.gammaspectra.live/git/go-away/cmd/go-away` or a library under `git.gammaspectra.live/git/go-away/lib`
+Source for this fork is [github.com/mansmarthome/go-away](https://github.com/mansmarthome/go-away).
+
+The Go module path is still `git.gammaspectra.live/git/go-away`. The command is `git.gammaspectra.live/git/go-away/cmd/go-away`. The library is `git.gammaspectra.live/git/go-away/lib`.
