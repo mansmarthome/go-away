@@ -68,6 +68,16 @@ The engine loads `@coraza.conf-recommended`, `@crs-setup.conf.example`, an optio
 
 Requires Go 1.25. The `go-away` binary is built with `-tags coraza.rule.no_regex_multiline`.
 
+### Local ASN database (`--asn-db`)
+
+`asn:` and `country:` network entries are matched against a local MMDB instead of querying `whois.radb.net`. Pass the file on the command line:
+
+```
+--asn-db /var/lib/go-away/iptoasn.mmdb
+```
+
+The database must contain `autonomous_system_number`. go-away does not download or refresh it. `--check` fails when the policy uses `asn:` or `country:` and the path is missing or unreadable. `country:` is the announcing ASN's country, not the visitor's location. How to build the file is under [Network range and automated filtering](#network-range-and-automated-filtering).
+
 ### Custom Configuration Examples
 
 - Pre-configured examples tailored for the [man smart-home](https://mansmarthome.info/) blog.
@@ -102,9 +112,16 @@ Note that issues or pull requests should be issued on the [main Forge](https://g
 
 ## Installation and Setup
 
-See the [Installation page](https://git.gammaspectra.live/git/go-away/wiki/Installation) on the Wiki for all the details.
+This fork does not publish release binaries. Build from source with Go 1.25 (`golang:1.25-alpine3.21` in [`.drone.yml`](.drone.yml)). `CGO_ENABLED` must be `0`. CI builds `linux/amd64` and `linux/arm64`; set `GOOS` and `GOARCH` to cross-compile.
 
-go-away can be directly run from command line, via pre-built containers, or your own built containers.
+```sh
+mkdir -p .bin
+CGO_ENABLED=0 go build -tags coraza.rule.no_regex_multiline -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
+```
+
+The Coraza build tag is required. See [Coraza WAF](#coraza-waf).
+
+Runtime setup (listeners, backends, policy) is on the upstream [Installation page](https://git.gammaspectra.live/git/go-away/wiki/Installation). Pre-built binaries and container images listed there belong to the upstream project, not this fork.
 
 ## Features
 
@@ -151,6 +168,7 @@ These templates are included by default:
 
 * `anubis`: An anubis-like themed challenge.
 * `forgejo`: Uses the Forgejo template and assets from your own instance. Supports specifying themes like `forgejo-auto`, `forgejo-light` and `forgejo-dark`.
+* `mansmarthome`: Challenge page for [man smart-home](https://mansmarthome.info/). Follows `prefers-color-scheme` instead of a named theme. Override `Brand` (default `man smart-home`), `Logo`, and `Favicon` via `challenge-template-overrides` or the matching command-line flags. Select it with `--challenge-template mansmarthome`.
 
 External templates for your site can be loaded specifying a full path to the `.gohtml` file. See [embed/templates/](embed/templates/) for examples to follow.
 
@@ -317,8 +335,6 @@ This fork is focused on behavioral bots, SEO crawlers, AI crawlers, and other ab
 The pattern is often low-effort and high-volume: spray requests across many paths, follow every link, hammer pagination, and retry failed requests. Even when denied, the traffic can continue for weeks. When the server slows down, more requests pile up, which makes the problem worse.
 
 This fork keeps the original go-away approach: flexible rules, multiple challenge types, and careful targeting, so legitimate users are not affected more than necessary. It adds Yandex SmartCaptcha, Coraza WAF, a local ASN database, IPv6 fixes, and other operational improvements useful for sites dealing with behavioral bots, SEO bots, and scrapers.
-
-If automated clients have to solve a challenge, run JavaScript, or otherwise behave more like a browser, the cost of mass scraping rises and the volume of low-effort abuse usually drops.
 
 ### Can bots adapt?
 
