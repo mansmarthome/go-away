@@ -1,8 +1,13 @@
 networks:
   googlebot:
-    - url: https://developers.google.com/static/search/apis/ipranges/googlebot.json
+    - url: https://developers.google.com/static/crawling/ipranges/common-crawlers.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+  google-fetchers:
+    - url: https://developers.google.com/static/crawling/ipranges/special-crawlers.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+    - url: https://developers.google.com/static/crawling/ipranges/user-triggered-fetchers-google.json
       jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
 
 conditions:
   is-bot-googlebot:
-      - &is-bot-googlebot '(userAgent.contains("+http://www.google.com/bot.html") || userAgent.contains("Google-PageRenderer") || userAgent.contains("Google-InspectionTool") || userAgent.contains("Googlebot")) && remoteAddress.network("googlebot")'
+      - &is-bot-googlebot '(userAgent.contains("+http://www.google.com/bot.html") || userAgent.contains("Google-PageRenderer") || userAgent.contains("Google-InspectionTool") || userAgent.contains("Googlebot")) && (remoteAddress.network("googlebot") || remoteAddress.network("google-fetchers"))'

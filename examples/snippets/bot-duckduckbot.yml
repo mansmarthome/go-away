@@ -1,7 +1,7 @@
 networks:
   duckduckbot:
-    - url: https://duckduckgo.com/duckduckgo-help-pages/results/duckduckbot
-      regex: "<li><div>(?P<prefix>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)</div></li>"
+    - url: https://duckduckgo.com/duckduckbot.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
 
 conditions:
   is-bot-duckduckbot:

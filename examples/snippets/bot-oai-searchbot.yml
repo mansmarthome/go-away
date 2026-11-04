@@ -1,0 +1,13 @@
+networks:
+  oai-searchbot:
+    - url: https://openai.com/searchbot.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+  chatgpt-userbot:
+    - url: https://openai.com/chatgpt-user.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+
+conditions:
+  is-bot-oai-searchbot:
+      - &is-bot-oai-searchbot 'userAgent.contains("+https://openai.com/searchbot") && remoteAddress.network("oai-searchbot")'
+  is-bot-chatgpt-userbot:
+      - &is-bot-chatgpt-userbot 'userAgent.contains("+https://openai.com/bot") && remoteAddress.network("chatgpt-userbot")'

@@ -1,0 +1,45 @@
+networks:
+  telegram:
+    - asn: 62014  # Telegram
+    - asn: 44907  # Telegram Messenger CDN
+    - asn: 62041  # Telegram
+    - asn: 59930  # Telegram Messenger
+    - asn: 211157 # Telegram
+  vk:
+    - asn: 47764
+
+conditions:
+  is-bot-page-preview:
+    - &is-bot-page-preview 'userAgent.contains("Discordbot")'
+    - &is-bot-page-preview 'userAgent.contains("facebookexternalhit")'
+    - &is-bot-page-preview 'userAgent.contains("Facebot")'
+    - &is-bot-page-preview 'userAgent.contains("LinkedInBot")'
+    - &is-bot-page-preview 'userAgent.contains("Slack-ImgProxy")'
+    - &is-bot-page-preview 'userAgent.contains("Slackbot")'
+    - &is-bot-page-preview 'userAgent.contains("TelegramBot")'
+    - &is-bot-page-preview 'userAgent.contains("Twitterbot")'
+    - &is-bot-page-preview 'userAgent.contains("WhatsApp")'
+    - &is-bot-page-preview 'userAgent.contains("SkypeUriPreview")'
+    - &is-bot-page-preview 'userAgent.contains("KakaoTalk")'
+    - &is-bot-page-preview 'userAgent.contains("Applebot")'                   # Apple News / iMessage previews
+    - &is-bot-page-preview 'userAgent.contains("DuckDuckBot")'                # DuckDuckGo Favicons & previews
+    - &is-bot-page-preview 'userAgent.contains("DuckDuckGo-Favicons-Bot")'
+    - &is-bot-page-preview 'userAgent.contains("Google-InspectionTool")'       # Google Search Console preview
+    - &is-bot-page-preview 'userAgent.contains("Googlebot-Image")'
+    - &is-bot-page-preview 'userAgent.contains("Googlebot/2.1")'               # still used for some previews
+    - &is-bot-page-preview 'userAgent.contains("bingbot")'
+    - &is-bot-page-preview 'userAgent.contains("BingPreview")'
+    - &is-bot-page-preview 'userAgent.contains("Pinterest")'
+    - &is-bot-page-preview 'userAgent.contains("Qwantify")'                   # Qwant search previews
+    - &is-bot-page-preview 'userAgent.contains("ia_archiver")'                 # Internet Archive (Wayback Machine)
+    - &is-bot-page-preview 'userAgent.contains("archive.org_bot")'
+    - &is-bot-page-preview 'userAgent.contains("RedditBot")'
+    - &is-bot-page-preview 'userAgent.contains("vkShare;")'
+    - &is-bot-page-preview 'userAgent.contains("Viber")'
+    - &is-bot-page-preview 'userAgent.contains("WeChat")'
+    - &is-bot-page-preview 'userAgent.contains("LineBot")'
+    - &is-bot-page-preview 'userAgent.contains("Instagram")'
+    - &is-bot-page-preview 'userAgent.contains("Embedly")'
+    - &is-bot-page-preview 'userAgent.contains("IFTTT")'
+    - &is-bot-page-preview 'userAgent.contains("BitlyBot")'
+    - &is-bot-page-preview 'userAgent.contains("n8fr8")'

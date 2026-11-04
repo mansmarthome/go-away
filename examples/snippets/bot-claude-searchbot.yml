@@ -1,0 +1,10 @@
+networks:
+  claude-cloud-ips:
+    - url: https://claude.com/crawling/bots.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+
+conditions:
+  is-bot-claude-searchbot:
+    - &is-bot-claude-searchbot '(userAgent.contains("Claude-SearchBot") || userAgent.contains("+searchbot@anthropic.com")) && remoteAddress.network("claude-cloud-ips")'
+  is-bot-claude-userbot:
+    - &is-bot-claude-userbot '(userAgent.contains("Claude-User") || userAgent.contains("+Claude-User@anthropic.com")) && remoteAddress.network("claude-cloud-ips")'

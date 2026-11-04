@@ -1,0 +1,11 @@
+networks:
+  perplexitybot:
+    - url: https://www.perplexity.ai/perplexitybot.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+  perplexity-userbot:
+    - url: https://www.perplexity.ai/perplexity-user.json
+      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+
+conditions:
+  is-bot-perplexitybot:
+    - &is-bot-perplexitybot '(userAgent.contains("PerplexityBot") && remoteAddress.network("perplexitybot")) || (userAgent.contains("Perplexity-User") && remoteAddress.network("perplexity-userbot"))'

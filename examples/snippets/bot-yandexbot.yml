@@ -1,8 +1,8 @@
 networks:
   yandexbot:
-    # todo: detected as bot
-    # - url: https://yandex.com/ips
-    #  regex: "<span>(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+)[ \\\\t]*</span><br/>"
+    # https://yandex.com/ips is the company range list, not a bot feed, and go-away fetches are bot-walled.
+    # Snapshot of https://yandex.com/ips on 2026-10-30.
+    # ASN DB attributes those ranges to AS208398 (TELETECH).
     - prefixes:
       - "5.45.192.0/18"
       - "5.255.192.0/18"
@@ -11,14 +11,19 @@ networks:
       - "77.88.0.0/18"
       - "84.252.160.0/19"
       - "87.250.224.0/19"
-      - "90.156.176.0/22"
+      - "90.156.176.0/20"
+      - "92.255.112.0/20"
       - "93.158.128.0/18"
       - "95.108.128.0/17"
       - "141.8.128.0/18"
       - "178.154.128.0/18"
       - "185.32.187.0/24"
+      - "213.180.192.0/19"
       - "2a02:6b8::/29"
+  yandexbot-asn:
+    - asn: 13238
+    - asn: 208398
 
 conditions:
   is-bot-yandexbot:
-      - &is-bot-yandexbot 'userAgent.contains("+http://yandex.com/bots") && remoteAddress.network("yandexbot")'
+      - &is-bot-yandexbot 'userAgent.contains("+http://yandex.com/bots") && (remoteAddress.network("yandexbot") || remoteAddress.network("yandexbot-asn"))'
