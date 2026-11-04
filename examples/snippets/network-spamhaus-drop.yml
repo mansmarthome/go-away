@@ -1,0 +1,6 @@
+networks:
+  spamhaus-drop:
+    - url: https://www.spamhaus.org/drop/drop_v6.json
+      regex: "(?P<prefix>[0-9a-f:]+::/[0-9]+)"
+    - url: https://www.spamhaus.org/drop/drop_v4.json
+      regex: "(?P<prefix>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+)"
