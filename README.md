@@ -82,6 +82,7 @@ The database must contain `autonomous_system_number`. go-away does not download 
 
 - Pre-configured examples tailored for the [man smart-home](https://mansmarthome.info/) blog.
 - [examples/waf-ghost.conf](examples/waf-ghost.conf) — optional CRS exclusions for a Ghost admin API.
+- [examples/haproxy.cfg](examples/haproxy.cfg) — JA4, client HTTP version, and a JSON log line when HAProxy terminates TLS.
 
 <p>
   <img height="420" alt="Yandex SmartCaptcha" src="https://github.com/user-attachments/assets/c78f1ceb-4661-4ebc-b548-85959d3e687b" />
@@ -232,9 +233,13 @@ Without TLS, HTTP/2 cleartext is supported, but you will need to configure the u
 
 ### TLS Fingerprinting
 
-When running with TLS via autocert, TLS Fingerprinting of the incoming client is done.
+When go-away terminates TLS, the client JA4 fingerprint is available as `fp.ja4`. Conditions can match it directly.
 
-This can be targeted on conditions or other application logic.
+If a reverse proxy terminates TLS, go-away never sees the ClientHello, and `fp.ja4` stays empty. The HTTP version on the backend connection is the proxy hop, not the client's. Pass both in as headers and match those instead.
+
+[examples/haproxy.cfg](examples/haproxy.cfg) is the relevant part of a production HAProxy frontend. It uses [ja4-haproxy](https://github.com/FriendlyCaptcha/ja4-haproxy) and sets `X-Forwarded-JA4` and `X-Forwarded-HTTP-Version`. The same file emits a JSON access log that includes the fingerprint. Header names are a convention: the policy must use the same strings.
+
+[examples/generic.yml](examples/generic.yml) challenges a `Chrome/` user agent when `X-Forwarded-JA4` is outside the `t13d15` prefix, or when `X-Forwarded-HTTP-Version` is `1.0` or `1.1`. Match the prefix only. The cipher and extension hashes rotate, and they are shared with other browsers.
 
 Read more about [JA3](https://medium.com/salesforce-engineering/tls-fingerprinting-with-ja3-and-ja3s-247362855967) and [JA4](https://github.com/FoxIO-LLC/ja4/blob/main/technical_details/README.md).
 
@@ -315,6 +320,11 @@ Important notes:
 * Check the conditions and base rules to change your challenges offered and other ordering.
 * Add or modify rules to target specific pages on your site as desired.
 * By default Googlebot / Bingbot / DuckDuckBot / Kagibot / Qwantbot / Yandexbot are allowed by useragent and network ranges.
+* A `Chrome/` user agent is challenged when `X-Forwarded-JA4` is outside the `t13d15` prefix, or when `X-Forwarded-HTTP-Version` is `1.0` or `1.1`. See [examples/haproxy.cfg](examples/haproxy.cfg).
+
+### HAProxy
+
+[examples/haproxy.cfg](examples/haproxy.cfg) is a fragment, not a full proxy config. It keeps the JSON log format, [JA4 fingerprinting](https://github.com/FriendlyCaptcha/ja4-haproxy), and the client HTTP version header. Routing, rate limits, certificates, and backends are omitted.
 
 ### Snippets
 

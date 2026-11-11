@@ -37,6 +37,16 @@ conditions:
     #- 'userAgent.matches("Gecko/(201[0-9]|200[0-9])")'
     - 'userAgent.matches("^Mozilla/[1-4]")'
 
+  # Modern Chrome ClientHellos start with t13d15. The rest of the hash rotates and is shared with other browsers.
+  # X-Forwarded-JA4 is set by the reverse proxy (examples/haproxy.cfg).
+  # YaBrowser contains "Chrome/" and is not always t13d15.
+  is-chrome-ja4-mismatch:
+    - '"X-Forwarded-JA4" in headers && !headers["X-Forwarded-JA4"].startsWith("t13d15") && userAgent.contains("Chrome/") && !userAgent.contains("YaBrowser")'
+
+  # Real Chrome navigations are HTTP/2 or HTTP/3. The version go-away sees is the proxy hop, so use the forwarded header.
+  is-http1-chrome:
+    - '"X-Forwarded-HTTP-Version" in headers && (headers["X-Forwarded-HTTP-Version"] == "1.0" || headers["X-Forwarded-HTTP-Version"] == "1.1") && userAgent.contains("Chrome/")'
+
 
 # Rules are checked sequentially in order, from top to bottom
 rules:
@@ -89,6 +99,15 @@ rules:
       # No user agent set
       - 'userAgent == ""'
     action: deny
+
+  # Chrome UA with a non-Chrome TLS stack, or still speaking HTTP/1.x
+  - name: chrome-fingerprint-mismatch
+    conditions:
+      - '($is-chrome-ja4-mismatch)'
+      - '($is-http1-chrome)'
+    action: challenge
+    settings:
+      challenges: [js-refresh]
 
   # check a sequence of challenges
   - name: suspicious-crawlers
