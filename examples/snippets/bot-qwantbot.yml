@@ -1,8 +1,8 @@
 networks:
   qwantbot:
-    - url: https://help.qwant.com/wp-content/uploads/sites/2/2025/01/qwantbot.json
+    - url: https://help.qwant.com/qwantbot.json
       jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
 
 conditions:
   is-bot-qwantbot:
-      - &is-bot-qwantbot 'userAgent.contains("+https://help.qwant.com/bot/") && remoteAddress.network("qwantbot")'
+    - &is-bot-qwantbot 'userAgent.contains("+https://help.qwant.com/bot/") && remoteAddress.network("qwantbot")'

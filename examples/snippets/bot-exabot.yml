@@ -1,0 +1,10 @@
+networks:
+  exabot:
+    # Exa does not publish an IP feed. https://crawler.exa.ai/ asks for HTTP
+    # Message Signature verification, which go-away cannot check.
+    - prefixes:
+      - "152.163.114.0/24"
+
+conditions:
+  is-bot-exabot:
+    - &is-bot-exabot 'userAgent.contains("+https://crawler.exa.ai/") && remoteAddress.network("exabot")'
