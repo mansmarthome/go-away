@@ -44,7 +44,7 @@ func (n Network) FetchPrefixes(c *http.Client) (output []net.IPNet, err error) {
 
 	var reader io.Reader
 	if n.Url != nil {
-		response, err := c.Get(*n.Url)
+		response, err := redirectFollowingClient(c).Get(*n.Url)
 		if err != nil {
 			return nil, err
 		}
@@ -123,6 +123,15 @@ func (n Network) FetchPrefixes(c *http.Client) (output []net.IPNet, err error) {
 		return nil, errors.New("no jq-path or regex specified")
 	}
 	return output, nil
+}
+
+func redirectFollowingClient(c *http.Client) *http.Client {
+	if c == nil {
+		return http.DefaultClient
+	}
+	clone := *c
+	clone.CheckRedirect = nil
+	return &clone
 }
 
 func parseCIDROrIP(value string) (net.IPNet, error) {
